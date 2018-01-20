@@ -1,0 +1,103 @@
+%% main file
+%%
+
+
+\documentclass[ebook,10pt,oneside,openany,final, french]{memoir}
+
+\usepackage{babel}
+\usepackage[utf8]{inputenc}
+
+\usepackage[final]
+           {listings}     % code listings
+\usepackage{relsize}      % provide relative font size changes
+\usepackage{underscore}   % remove special status of '_' in ordinary text
+\usepackage{verbatim}     % improved verbatim environment
+\usepackage{parskip}      % handle non-indented paragraphs "properly"
+\usepackage{array}        % new column definitions for tables
+\usepackage[normalem]{ulem}
+\usepackage{color}        % define colors for strikeouts and underlines
+\usepackage{amsmath}      % additional math symbols
+\usepackage{mathrsfs}     % mathscr font
+\usepackage{microtype}
+\usepackage{multicol}
+\usepackage{xspace}
+\usepackage{fixme}
+\usepackage{lmodern}
+\usepackage[T1]{fontenc}
+\usepackage[pdftex,
+            pdftitle={Deep networks for character recognition},
+            pdfsubject={},
+            pdfcreator={Vincent CHAMBRIN},
+            bookmarks=true,
+            bookmarksnumbered=true,
+            pdfpagelabels=true,
+            pdfpagemode=UseOutlines,
+            pdfstartview=FitH,
+            linktocpage=true,
+            colorlinks=true,
+            linkcolor=blue,
+            plainpages=false
+           ]{hyperref}
+\usepackage{memhfixc}     % fix interactions between hyperref and memoir
+\usepackage{xstring}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{wrapfig}
+\usepackage{amsfonts}
+\usepackage{stmaryrd}
+\usepackage{cite}
+\usepackage{mathtools}
+
+
+\usepackage{amsthm}
+\newtheorem{theorem}{Théorème}[section]
+\newtheorem{corollary}{Corollaire}[theorem]
+\newtheorem{lemma}[theorem]{Lemme}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{remark}{Remarque}
+\newtheorem{definition}{Définition}
+
+
+\input{layout}
+\input{styles}
+\input{macros}
+
+\makeindex
+
+
+%%--------------------------------------------------
+%% fix interaction between hyperref and other
+%% commands
+\pdfstringdefDisableCommands{\def\smaller#1{#1}}
+\pdfstringdefDisableCommands{\def\textbf#1{#1}}
+\pdfstringdefDisableCommands{\def\raisebox#1{}}
+\pdfstringdefDisableCommands{\def\hspace#1{}}
+
+
+\begin{document}
+\chapterstyle{chapterStyle}
+\pagestyle{pageStyle}
+
+\frontmatter
+\include{front}
+
+\mainmatter
+\setglobalstyles
+
+\include{intro}
+\include{neural-nets}
+\include{reco-neural-net}
+\include{reco-features}
+\include{reco-cnn}
+\include{comp}
+
+\begin{appendices}
+
+
+\end{appendices}
+
+
+\backmatter
+\include{back}
+
+\end{document}

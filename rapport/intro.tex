@@ -1,0 +1,40 @@
+
+\chapter{Introduction}
+
+La reconnaissance de caractères, ou plus généralement de textes manuscrits, est 
+un domaine en pleine expansion. 
+De nombreux géants de l'informatique comme Google, Apple ou Microsoft se battent pour 
+offrir à leurs utilisateurs (et probablement à d'autres fins) le meilleur système 
+de reconnaissance de texte. Les utilisations sont nombreuses :
+\begin{itemize}
+  \item application de prises de notes;
+  \item saisie de formulaires;
+  \item saisie d'une adresse pour le système GPS de certaines voitures;
+  \item reconnaissance d'adresse postale sur les enveloppes;
+  \item reconnaissance d'un montant sur les chéques.
+\end{itemize}
+
+\vspace{1em}
+
+Dans le cadre de ce projet, on se contentera de tenter de reconnaître des chiffres. 
+On utilisera pour cela le jeu de données MNIST, qui est un jeu de données contenant 
+60000 images d'apprentissage et 10000 images de test. Ces images, représentants des 
+chiffres écrits à la main, sont en niveaux de gris et font 28 pixels par 28 pixels.
+Elles sont issues de deux jeux de données collectés par le NIST 
+(United States' National Institute of Standards and Technology). 
+A chaque image est associé un label (i.e.\/ le chiffre représenté). 
+Ce jeu de données est pratiquement devenu un standard dans le monde de la 
+reconnaissance de caractères.
+
+Ce rapport est découpé en plusieurs parties. Dans un premier temps, une introduction 
+sur les réseaux de neurones permettra de se familiariser avec ces derniers. 
+On sera alors en mesure d'écrire nous-même les algorithmes pour les réseaux les 
+plus simples et nous pourrons construire un premier réseau permettant de répondre 
+au problème de classification que l'on se pose. \\
+Ensuite, nous pourrons mettre en oeuvre des techniques de`\nfw{machine learning} 
+plus poussés et plus adaptés à notre domaine. On commencera pour cela par 
+étudier certaines techniques propres au problème de reconnaissance de caractères
+(l'extraction de \nfw{features}).
+Enfin, nous nous pencherons sur l'utilisation de réseaux de neurones convolutionnels, 
+ces derniers étant particulièrement adaptés aux problèmes de vision par ordinateur 
+et de traitement d'image.

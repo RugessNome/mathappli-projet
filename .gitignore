@@ -1,0 +1,12 @@
+python/__pycache__/*
+python/projet.pyproj
+rapport/*.aux
+rapport/*.log
+rapport/*.idx
+rapport/*.out
+rapport/*.toc
+rapport/*.pdf
+__pycache__
+*.sln
+.ipynb_checkpoints/*
+.vs
