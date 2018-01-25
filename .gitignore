@@ -10,3 +10,4 @@ __pycache__
 *.sln
 .ipynb_checkpoints/*
 .vs
+.DS_Store

@@ -1,7 +1,7 @@
+
 import os
 import struct
 import numpy as np
-
 
 # Function for importing the MNIST data set from local files
 def __read(dataset, path):
@@ -26,6 +26,15 @@ def __read(dataset, path):
 
     return img, lbl
 
+
+def _find_datasets():
+    import os.path
+    files = ['train-images.idx3-ubyte', 'train-labels.idx1-ubyte', 
+             't10k-images.idx3-ubyte', 't10k-labels.idx1-ubyte']
+    for f in files:
+        if not os.path.exists(f):
+            return False
+    return True
 
 MNIST_TRAINING_DATA = 0
 MNIST_TEST_DATA = 1
@@ -59,6 +68,8 @@ def load(what, format = MNIST_FORMAT_LIST_OF_PAIR, shape = None, path = None):
 
     if path != None:
         images, labels = __read('training' if what == MNIST_TRAINING_DATA else 'testing', path)
+    elif _find_datasets():
+        images, labels = __read('training' if what == MNIST_TRAINING_DATA else 'testing', '')
     else:
         try:
             import keras.datasets.mnist
