@@ -371,6 +371,12 @@ from sklearn.metrics import confusion_matrix
 cm = confusion_matrix(ytest,y_predict_gbc,)
 cm
 
+# Visualize confusion matrix as a heatmap
+import seaborn as sb
+plt.rcParams['figure.figsize'] = (10, 7)
+ax = sb.heatmap(cm, cmap="BuPu")
+ax.invert_yaxis()
+plt.yticks(rotation=0);
 
 # In[24]:
 
@@ -473,4 +479,3 @@ plt.bar(x, L[9], color="blue")
 plt.title("Prediction of 9")
 plt.xlim([0,9])
 plt.show()
-
