@@ -22,7 +22,9 @@ from sklearn.metrics import confusion_matrix
 from keras.wrappers.scikit_learn import KerasClassifier
 from sklearn.model_selection import cross_val_score
 from sklearn.model_selection import GridSearchCV
-
+import numpy as np
+import seaborn as sb
+import matplotlib.pyplot as plt
 
 # DATA PREPROCESSING :
 
@@ -89,14 +91,11 @@ def eval_model(nb_epochs = 10, batch_size = 32, cv = 10):
 def ypred(pred):
         y=[]
         for i in range(0, len(pred)):
-            max=pred[i][0]
-            index=0
-            for j in range(1,10):
-                if pred[i][j]>max:
-                    max=pred[i][j]
-                    index=j
+            pred_i = pred[i,].tolist()
+            index = pred_i.index(max(pred_i))
             y.append(index)
-        return y
+        y = np.array(y)
+        return y  
 
 # Determines loss, accuracy and confusion matrix
 def predict(classifier):
@@ -112,6 +111,10 @@ def predict(classifier):
     y_predict = ypred(y_predict_vect)
     cm = confusion_matrix(y_test,y_predict)
     
+# Visualize confusion matrix as a heatmap
+ax = sb.heatmap(cm, cmap="BuPu")
+ax.invert_yaxis()
+plt.yticks(rotation=0); 
     
 # TUNING THE CNN : 
     

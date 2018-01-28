@@ -7,9 +7,9 @@ from mnist import show
 # In[2]:
 
 
-import os
-import struct
+
 import numpy as np
+import matplotlib.pyplot as plt
     
 def ascii_show(image):
     """
@@ -373,7 +373,6 @@ cm
 
 # Visualize confusion matrix as a heatmap
 import seaborn as sb
-plt.rcParams['figure.figsize'] = (10, 7)
 ax = sb.heatmap(cm, cmap="BuPu")
 ax.invert_yaxis()
 plt.yticks(rotation=0);
