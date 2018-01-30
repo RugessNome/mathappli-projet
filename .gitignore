@@ -11,3 +11,5 @@ __pycache__
 .ipynb_checkpoints/*
 .vs
 .DS_Store
+*.DS_Store
+ignore/*

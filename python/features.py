@@ -677,7 +677,7 @@ def _compute_moment(p, q, index, img):
 
 _zones = None
 def _compute_zone(i, j, index, img):
-    if i is None:
+    if index is None:
         zones = zoning(img)
         return zones[j*7+i]
     assert(i is not None)
