@@ -72,14 +72,13 @@ class Recognizer(object):
                 
     
     def predict(self, img):
-        Xpredic = features.get_features(self.features, image = img)
+        Xpredic = [features.get_features(self.features, img)]
         Xpredic = self.scaler.transform(Xpredic)
         return self.classifier.predict(Xpredic)[0]
 
 
 def example1():
-    r = Recognizer(['loops', 'fourier_contour_a0', 'fourier_contour_b0', 'fourier_contour_c0', 'fourier_contour_d0',
-                    'fourier_contour_a1', 'fourier_contour_b1', 'fourier_contour_c1', 'fourier_contour_d1'])
+    r = Recognizer(['loops', 'zones', 'fourier_contour'])
     images, labels = mnist.load(mnist.MNIST_TEST_DATA, mnist.MNIST_FORMAT_PAIR_OF_LIST)
     for i in range(10):
         print('Prediction = ', r.predict(images[i]))

@@ -579,16 +579,7 @@ import time
 cache_was_checked = False
 cache_dict = dict()
 
-feature_list = ['loops', 
-                'moment_00', 'moment_01', 'moment_10', 'moment_11',
-                'moment_20', 'moment_21', 'moment_02', 'moment_12', 'moment_22',
-                'fourier_image_00', 'fourier_image_01', 'fourier_image_10', 'fourier_image_11',
-                'fourier_image_20', 'fourier_image_21', 'fourier_image_02', 'fourier_image_12', 'fourier_image_22',
-                'fourier_contour_a0', 'fourier_contour_b0', 'fourier_contour_c0', 'fourier_contour_d0',
-                'fourier_contour_a1', 'fourier_contour_b1', 'fourier_contour_c1', 'fourier_contour_d1']
-for i in range(7):
-    for j in range(7):
-        feature_list.append('zone_' + str(i) + str(j))
+feature_list = ['loops', 'zones', 'moments', 'fourier_image', 'fourier_contour']
 
 def _register_feature(name):
     cache_dict[name + '_training'] = None
@@ -634,171 +625,102 @@ def clear_cache(which = None):
         os.remove('cache/' + which + '_testing.npy')
         cache_dict[which + '_testing'] = None
 
-def get_feature(feat, dataset = 'training', image = None):
+def get_feature(feat, input = 'training'):
     """
-    Returns the requested feature `feat` for either a whole `dataset` or 
-    a single `image`.
-    If `image` is None, the features are retrieved from a cache (and hence must 
-    have been already calculated with `compute_feature`) and a list is returned.
-    Otherwise, the feature is computed using `compute_feature` on the `image`.
+    Returns the requested feature `feat` for the given `input`, which can be 
+    a dataset name (`training` or `testing`) or a 2D-numpy array representing 
+    an image.
+    If `input` is not an image, the features are retrieved from a cache (and hence 
+    must have been already calculated with `compute_feature`) and a list is returned.
+    Otherwise, the feature is computed using `compute_feature` on the `input`-image.
     """
-    if image is not None:
-        return compute_feature(feat, image = image)
-    assert(image is None)
+    if type(input) is np.ndarray:
+        return compute_feature(feat, input)
+    assert(type(input) is str)
+    dataset = input
     _check_cache()
     data = cache_dict[feat+'_'+dataset]
     if data is None:
         raise RuntimeError('Feature ' + feat + ' was not calculated for the desired dataset')
     return data
 
-def get_features(feats, dataset = 'training', image = None):
+def get_features(feats, input = 'training'):
     """
-    Returns a list of features for a whole `dataset` or a single `image`.
-    If `image` is not each feature in `feats` is retrieved using `get_feature`.
-    The features are then concatenated in a matrix in which each line contains 
-    all the requested feature for a single image.
-    Otherwise, if `image` is a valid image, computes all the requested feature and 
-    returns a single list containing the values.
+    Returns the requested feature `feat` for the given `input`, which can be 
+    a dataset name (`training` or `testing`) or a 2D-numpy array representing 
+    an image.
+    Uses `get_feature` internally.
     """
     data = []
     for f in feats:
-        if image is None:
-            data.append(get_feature(f, dataset))
-        else:
-            data.append(get_feature(f, image=image))
-    return np.vstack(data).T
+        data.append(get_feature(f, input))
+    if type(input) is np.ndarray:
+        return np.concatenate(data)
+    return np.concatenate(data, axis=1)
 
 
-def _compute_loops(i, img):
-    return detectLoops(binarize(img))
+def _compute_loops(img):
+    return [detectLoops(binarize(img))]
 
-def _compute_moment(p, q, index, img):
-    return cmoment(img / 255, p, q)
+def _compute_moments(img):
+    which = [(0,0), (0,1), (1,0), (1,1), (2,0), (2,1), (0,2), (1,2), (2,2)]
+    moments = np.zeros(len(which))
+    img = img / 255
+    m00 = moment(img, 0, 0)
+    xbar = moment(img, 1, 0) / m00
+    ybar = moment(img, 0, 1) / m00
+    index = 0
+    for i,j in which:
+        moments[index] = cmoment(img, i, j, xbar, ybar)
+        index += 1
+    return moments
 
-_zones = None
-def _compute_zone(i, j, index, img):
-    if index is None:
-        zones = zoning(img)
-        return zones[j*7+i]
-    assert(i is not None)
-    global _zones
-    if _zones is None:
-        _zones = [None]*60000
-    if _zones[index] is None:
-        _zones[index] = zoning(img)
-    zones = _zones[index]
-    return zones[j * 7 + i]
 
-_fourier_image_coeffs = None
-def _compute_fourier_image_coeffs(index, img, x, y):
-    if index is None:
-        return fourier_image_coefficients(img)[y][x]
-    assert(index is not None)
-    global _fourier_image_coeffs
-    if _fourier_image_coeffs is None:
-        _fourier_image_coeffs = [None] * 60000
-    if _fourier_image_coeffs[index] is None:
-        _fourier_image_coeffs[index] = fourier_image_coefficients(img)
-    return _fourier_image_coeffs[index][y][x]
+def _compute_zones(img):
+    return np.array(zoning(img))
 
-_contours = None
-_fourier_contour_coeffs = None
-def _compute_fourier_contour_coeffs(i, img):
-    if i is None:
-        spt, chain = extract_contour(img)
-        return fourier_contour_coefficients(chain, 10)
-    assert(i is not None)
-    global _contours
-    global _fourier_contour_coeffs
-    if _contours is None:
-        _contours = [None] * 60000
-    if _fourier_contour_coeffs is None:
-        _fourier_contour_coeffs = [None] * 60000
-    if _contours[i] is None:
-        spt, chain = extract_contour(img)
-        _contours[i] = chain
-    if _fourier_contour_coeffs[i] is None:
-        chain = _contours[i]
-        _fourier_contour_coeffs[i] = fourier_contour_coefficients(chain, 10)
+def _grid(w, h):
+    result = []
+    for x in range(w+1):
+        for y in range(h+1):
+            result.append((x,y))
+    return result
 
-    return _fourier_contour_coeffs[i]
+def _compute_fourier_image_coeffs(img):
+    coeffs = fourier_image_coefficients(img)
+    which = _grid(4, 4)
+    ret = np.zeros(len(which))
+    index = 0
+    for x,y in which:
+        ret[index] = coeffs[y][x]
+        index += 1
+    return ret
 
-def _compute_fourier_contour_a0(i, img):
-    A0, C0, a, b, c, d = _compute_fourier_contour_coeffs(i, img)
-    return a[0]
-
-def _compute_fourier_contour_b0(i, img):
-    A0, C0, a, b, c, d = _compute_fourier_contour_coeffs(i, img)
-    return b[0]
-
-def _compute_fourier_contour_c0(i, img):
-    A0, C0, a, b, c, d = _compute_fourier_contour_coeffs(i, img)
-    return c[0]
-
-def _compute_fourier_contour_d0(i, img):
-    A0, C0, a, b, c, d = _compute_fourier_contour_coeffs(i, img)
-    return d[0]
-
-def _compute_fourier_contour_a1(i, img):
-    A0, C0, a, b, c, d = _compute_fourier_contour_coeffs(i, img)
-    return a[1]
-
-def _compute_fourier_contour_b1(i, img):
-    A0, C0, a, b, c, d = _compute_fourier_contour_coeffs(i, img)
-    return b[1]
-
-def _compute_fourier_contour_c1(i, img):
-    A0, C0, a, b, c, d = _compute_fourier_contour_coeffs(i, img)
-    return c[1]
-
-def _compute_fourier_contour_d1(i, img):
-    A0, C0, a, b, c, d = _compute_fourier_contour_coeffs(i, img)
-    return d[1]
-
+def _compute_fourier_contour_coeffs(img):
+    spt, chain = extract_contour(img)
+    A0, C0, a, b, c, d = fourier_contour_coefficients(chain, 10)
+    ret = []
+    for i in range(8):
+        ret.append(a[i])
+        ret.append(b[i])
+        ret.append(c[i])
+        ret.append(d[i])
+    return np.array(ret)
 
 _procedures = dict()
 _procedures['loops'] = _compute_loops
-
-for i in range(7):
-    for j in range(7):
-        _procedures['zone_' + str(j) + str(i)] = lambda index,img: _compute_zone(i, j, index, img) 
-
-_procedures['moment_00'] = lambda i,img: _compute_moment(0, 0, i, img)
-_procedures['moment_01'] = lambda i,img: _compute_moment(0, 1, i, img)
-_procedures['moment_10'] = lambda i,img: _compute_moment(1, 0, i, img)
-_procedures['moment_11'] = lambda i,img: _compute_moment(1, 1, i, img)
-_procedures['moment_20'] = lambda i,img: _compute_moment(2, 0, i, img)
-_procedures['moment_21'] = lambda i,img: _compute_moment(2, 1, i, img)
-_procedures['moment_02'] = lambda i,img: _compute_moment(0, 2, i, img)
-_procedures['moment_12'] = lambda i,img: _compute_moment(1, 2, i, img)
-_procedures['moment_22'] = lambda i,img: _compute_moment(2, 2, i, img)
-
-_procedures['fourier_image_00'] = lambda i,img: _compute_fourier_image_coeffs(i, img, 0, 0)
-_procedures['fourier_image_01'] = lambda i,img: _compute_fourier_image_coeffs(i, img, 0, 1)
-_procedures['fourier_image_10'] = lambda i,img: _compute_fourier_image_coeffs(i, img, 1, 0)
-_procedures['fourier_image_11'] = lambda i,img: _compute_fourier_image_coeffs(i, img, 1, 1)
-_procedures['fourier_image_02'] = lambda i,img: _compute_fourier_image_coeffs(i, img, 0, 2)
-_procedures['fourier_image_12'] = lambda i,img: _compute_fourier_image_coeffs(i, img, 1, 2)
-_procedures['fourier_image_20'] = lambda i,img: _compute_fourier_image_coeffs(i, img, 2, 0)
-_procedures['fourier_image_21'] = lambda i,img: _compute_fourier_image_coeffs(i, img, 2, 1)
-_procedures['fourier_image_22'] = lambda i,img: _compute_fourier_image_coeffs(i, img, 2, 2)
-
-_procedures['fourier_contour_a0'] = _compute_fourier_contour_a0
-_procedures['fourier_contour_b0'] = _compute_fourier_contour_b0
-_procedures['fourier_contour_c0'] = _compute_fourier_contour_c0
-_procedures['fourier_contour_d0'] = _compute_fourier_contour_d0
-_procedures['fourier_contour_a1'] = _compute_fourier_contour_a1
-_procedures['fourier_contour_b1'] = _compute_fourier_contour_b1
-_procedures['fourier_contour_c1'] = _compute_fourier_contour_c1
-_procedures['fourier_contour_d1'] = _compute_fourier_contour_d1
+_procedures['zones'] = _compute_zones
+_procedures['moments'] = _compute_moments
+_procedures['fourier_image'] = _compute_fourier_image_coeffs
+_procedures['fourier_contour'] = _compute_fourier_contour_coeffs
 
 
-def compute_feature(feat, dataset = 'training', callback = None, image = None):
+def compute_feature(feat, input = 'training', callback = None):
     """
-    Compute the requested feature `feat` for either a complete `dataset` or a 
-    given `image`.
-    If `image` is None (i.e. features are computed for a whole dataset, the 
-    parameter `callback` can be set to a function having the following signature:
+    Compute the requested feature `feat` for the given `input`, which can be 
+    the name of a dataset (`training` or `testing`) or a 2D-numpy array 
+    representing an image.
+    The parameter `callback` can be set to a function having the following signature:
     ```
     def callback(feat : str, dataset : str, i : int, n : int)
     ```
@@ -806,17 +728,17 @@ def compute_feature(feat, dataset = 'training', callback = None, image = None):
     Returns a list of values if `image` is None; otherwise a single value is returned.
     """
     proc = _procedures[feat]
-    if image is not None:
-        return proc(None, image)
-    dataset_name = dataset
-    dataset = mnist.MNIST_TRAINING_DATA if dataset == 'training' else mnist.MNIST_TEST_DATA
+    if type(input) is np.ndarray:
+        return proc(input)
+    dataset_name = input
+    dataset = mnist.MNIST_TRAINING_DATA if dataset_name == 'training' else mnist.MNIST_TEST_DATA
     images, _ = mnist.load(dataset, mnist.MNIST_FORMAT_PAIR_OF_LIST)
     n = len(images)
     last_feedback = time.time()
     result = []
     for i in range(len(images)):
         img = images[i]
-        result.append(proc(i, img))
+        result.append(proc(img))
         # Give feedback to user
         if callback != None and time.time() - last_feedback > 5:
             callback(feat, dataset_name, i, n)
@@ -849,24 +771,13 @@ if __name__ == '__main__':
     if len(feats) != 0:
         print('Features to compute for the training set : ')
         print(feats)
-        if _file_exists('cache/contours_training.npy'):
-            print('Loading contour data from cache')
-            _contours = np.load('cache/contours_training.npy')
         for f in feats:
             compute_feature(f, 'training', callback = print_progress)
-
-    _zones = None
-    _contours = None
-    _fourier_contour_coeffs = None
-    _fourier_image_coeffs = None
 
     feats = features_to_compute('testing')
     if len(feats) != 0:
         print('Features to compute for the testing set : ')
         print(feats)
-        if _file_exists('cache/contours_testing.npy'):
-            print('Loading contour data from cache')
-            _contours = np.load('cache/contours_testing.npy')
         for f in feats:
             compute_feature(f, 'testing', callback = print_progress)
     print('OK...')
