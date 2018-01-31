@@ -516,7 +516,7 @@ def fourier_contour_coefficients(chain, n, normalized = True):
 
 
 def fourier_approx(chain, n, m, normalized = True):
-    A0, C0, a, b, c, d = fourier_coefficients(chain, n, normalized)
+    A0, C0, a, b, c, d = fourier_contour_coefficients(chain, n, normalized)
 
     pts = []
     for t in range(1, m+1):
