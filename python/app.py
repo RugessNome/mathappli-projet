@@ -8,6 +8,8 @@ from PyQt5.QtGui import QPixmap
 
 from drawwidget import DrawWidget
 from reco import Recognizer
+import cnn
+import numpy as np
 
 draw = None
 recognizer = None
@@ -17,7 +19,9 @@ def on_button_clicked():
     #pix = QPixmap.fromImage(img)
     #pix.save('test.png')
     img = draw.getNumpyImage()
-    result = recognizer.predict(img)
+    img = np.expand_dims(img, axis = 2)
+    result = cnn.single_prediction(img)[0][0]
+    #result = recognizer.predict(img)
     #import mnist
     #mnist.show(img)
     QMessageBox.information(draw, 'Prediction', str(result), QMessageBox.Ok, QMessageBox.Ok)
@@ -36,7 +40,8 @@ def on_clear_button_clicked():
     draw.clear()
 
 if __name__ == '__main__':
-    recognizer = Recognizer(['loops', 'zones', 'fourier_image', 'fourier_contour'])
+    cnn.fit_model(epochs = 10, batch_size = 32)
+    #recognizer = Recognizer(['loops', 'zones', 'fourier_image', 'fourier_contour'])
     app = QApplication(sys.argv)
     widget = QWidget()
     layout = QVBoxLayout()
