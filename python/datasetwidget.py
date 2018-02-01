@@ -63,7 +63,7 @@ class ImageView(QWidget):
         if self.prediction == self.label:
             return
         pal = self.labelwidget.palette()
-        pal.setColor(Qt.ForegroundRole, Qt.red)
+        pal.setColor(QPalette.Normal, QPalette.WindowText, Qt.red)
         self.labelwidget.setPalette(pal)
 
 
@@ -116,7 +116,7 @@ class DatasetWidget(QWidget):
         for x in range(cols):
             for y in range(rows):
                 cell = ImageView(None, None)
-                self.grid_layout.addWidget(cell, y, x)
+                self.grid_layout.addWidget(cell, x, y)
                 self.cells.append(cell)
         self.set_current_page(0)
 
