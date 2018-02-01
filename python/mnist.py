@@ -3,13 +3,19 @@ import os
 import struct
 import numpy as np
 
+MNIST_TRAINING_DATA = 0
+MNIST_TEST_DATA = 1
+
+MNIST_FORMAT_LIST_OF_PAIR = 1
+MNIST_FORMAT_PAIR_OF_LIST = 2
+
 # Function for importing the MNIST data set from local files
 def __read(dataset, path):
 
-    if dataset is "training":
+    if dataset is MNIST_TRAINING_DATA:
         fname_img = os.path.join(path, 'train-images.idx3-ubyte')
         fname_lbl = os.path.join(path, 'train-labels.idx1-ubyte')
-    elif dataset is "testing":
+    elif dataset is MNIST_TEST_DATA:
         fname_img = os.path.join(path, 't10k-images.idx3-ubyte')
         fname_lbl = os.path.join(path, 't10k-labels.idx1-ubyte')
     else:
@@ -36,11 +42,14 @@ def _find_datasets():
             return False
     return True
 
-MNIST_TRAINING_DATA = 0
-MNIST_TEST_DATA = 1
-
-MNIST_FORMAT_LIST_OF_PAIR = 1
-MNIST_FORMAT_PAIR_OF_LIST = 2
+def dataset_by_name(name):
+    if name == MNIST_TEST_DATA or name == MNIST_TRAINING_DATA:
+        return name
+    if name == 'training' or name == 'train':
+        return MNIST_TRAINING_DATA
+    elif name == 'testing' or name == 'test':
+        return MNIST_TEST_DATA
+    raise RuntimeError('Unknown dataset : '+ str(name))
 
 def load(what, format = MNIST_FORMAT_LIST_OF_PAIR, shape = None, path = None):
     """
@@ -67,9 +76,9 @@ def load(what, format = MNIST_FORMAT_LIST_OF_PAIR, shape = None, path = None):
     images, label = None, None
 
     if path != None:
-        images, labels = __read('training' if what == MNIST_TRAINING_DATA else 'testing', path)
+        images, labels = __read(dataset_by_name(what), path)
     elif _find_datasets():
-        images, labels = __read('training' if what == MNIST_TRAINING_DATA else 'testing', '')
+        images, labels = __read(dataset_by_name(what), '')
     else:
         try:
             import keras.datasets.mnist
