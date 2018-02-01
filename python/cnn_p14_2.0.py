@@ -117,9 +117,11 @@ def cm_visualisation():
     ax.invert_yaxis()
     plt.yticks(rotation=0); 
     
-# Returns the 3 first results with their probabilities for the prediction i of the test set
-def single_prediction(i,printResult=True):
-    test = np.expand_dims(X_test[i], axis = 0)
+# Returns the 3 first results with their probabilities for the prediction of image
+# image must be sized (28,28,1)
+# use np.expand_dims() if you want to increase dimensions
+def single_prediction(image,printResult=True):
+    test = np.expand_dims(image, axis = 0)
     l=classifier.predict(test)
     l=l[0].tolist()
     ind1 = l.index(max(l))
@@ -134,7 +136,7 @@ def single_prediction(i,printResult=True):
         print("prédictions : \n", str(ind1), " p =", str(round(proba1,5)), "\n", 
                                   str(ind2), " p =", str(round(proba2,5)), "\n", 
                                   str(ind3), " p =", str(round(proba3,5)),)
-    return [[ind1,ind2,ind3],[proba1,proba2,proba3]]
+    return [[ind1,proba1],[ind2,proba2],[ind3,proba3]]
     
 # TUNING THE CNN : 
     
