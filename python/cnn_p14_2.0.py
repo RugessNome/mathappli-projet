@@ -112,9 +112,29 @@ def predict(classifier):
     cm = confusion_matrix(y_test,y_predict)
     
 # Visualize confusion matrix as a heatmap
-ax = sb.heatmap(cm, cmap="BuPu")
-ax.invert_yaxis()
-plt.yticks(rotation=0); 
+def cm_visualisation():
+    ax = sb.heatmap(cm, cmap="BuPu")
+    ax.invert_yaxis()
+    plt.yticks(rotation=0); 
+    
+# Returns the 3 first results with their probabilities for the prediction i of the test set
+def single_prediction(i,printResult=True):
+    test = np.expand_dims(X_test[i], axis = 0)
+    l=classifier.predict(test)
+    l=l[0].tolist()
+    ind1 = l.index(max(l))
+    proba1 = l[ind1]
+    l[ind1] = 0
+    ind2 = l.index(max(l))
+    proba2 = l[ind2]
+    l[ind2] = 0
+    ind3 = l.index(max(l))
+    proba3 = l[ind3]
+    if printResult == True :
+        print("prédictions : \n", str(ind1), " p =", str(round(proba1,5)), "\n", 
+                                  str(ind2), " p =", str(round(proba2,5)), "\n", 
+                                  str(ind3), " p =", str(round(proba3,5)),)
+    return [[ind1,ind2,ind3],[proba1,proba2,proba3]]
     
 # TUNING THE CNN : 
     
