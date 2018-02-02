@@ -19,6 +19,7 @@ def on_button_clicked():
     #pix = QPixmap.fromImage(img)
     #pix.save('test.png')
     img = draw.getNumpyImage()
+    img = img/255
     img = np.expand_dims(img, axis = 2)
     result = cnn.single_prediction(img)[0][0]
     #result = recognizer.predict(img)
