@@ -330,10 +330,180 @@ de calculer une à une les sorties des neurones, il est plus efficace de faire
 un calcul matriciel (les bibliothèques étant en générales optimisées pour cela).
 Cela permet également d'avoir un code plus simple (avec notamment moins de boucles).
 
+Cette écriture permet également d'écrire de manière très condensée un réseau 
+de neurones à plusieurs couches. 
+En notant $w^{1}, w^{2}, \cdots, w^{L}$ les matrices de poids de $L$ couches de 
+neurones, et $b^{1}, b^{2}, \cdots, b^{L}$ les vecteurs des biais associés, et 
+en supposant que tous les neurones ont pour fonction d'activation $\sigma$, on 
+peut écrire la sortie du réseau complet de manière condensée:
+\[
+y = \sigma(b^{L} + w^{L} \cdot \sigma(b^{L-1} + w^{L-1} \cdot \sigma(\cdots)))
+\]
+
+ou, de manière un peu plus lisible.
+\[
+\begin{cases}
+ y^{l} = \sigma(w^{l} \cdot y^{l-1} + b^{l}) \\
+ y^{0} = x \\
+\end{cases}
+\]
+
+On constate donc que l'on peut très facilement calculer la sortie d'un réseau 
+de neurones par un algorithme itératif. 
+
+Autre remarque importante: il n'est pas nécessaire que les $(w^{l})_{l \in \llbracket 1, L \rrbracket}$ 
+aient les mêmes dimensions. Autrement dit, il peut y avoir un nombre différent 
+de neurones dans chaque couche; le seule impératif est que les dimensions 
+d'une couche à la suivante soient cohérentes.
+
+En reprenant les notations précédentes, on a que $w_{jk}^{l}$ est le poids de la 
+connexion reliant le $k$\textsuperscript{ème} neurone de la couche $(l-1)$ au 
+$j$\textsuperscript{ème} neurone de la couche $l$.
+De la même manière, $b_{j}^{l}$ est le biais du $j$\textsuperscript{ème} neurone 
+de la couche $l$.
+
+
+
 \section{Apprentissage par la descente de gradient}
+
+
+On considère dans cette partie un réseau de neurones à $L$ couches, et on note 
+encore $w^{1}, w^{2}, \cdots, w^{L}$ les matrices des poids et $b^{1}, \cdots, b^{L}$
+les vecteurs des biais. 
+On cherche dans cette partie à améliorer de manière itérative la valeurs des 
+coefficients du réseau pour améliorer les prédictions. 
+On introduit pour cela une fonction de coûts, croissante de l'erreur, et 
+on se ramène à un problème d'optimisation.
+
+\begin{definition}[Fonction de coût quadratique]
+Soit $X$ un ensemble d'apprentissage de cardinal $n$. 
+On note $y(x)$ la sortie du réseau de neurones pour l'entrée $x \in X$ et 
+$a(x)$ la sortie désirée. On définit la fonction de coût par:
+\[
+C(w, b) = \frac{1}{2n} \sum_{x} \vecnorm{y(x) - a(x)}^2
+\]
+\end{definition}
+
+On parle aussi de \textsc{MSE} pour \nfw{mean square error}.
+
+Cette fonction à le bon goût d'être convexe. Ainsi, on peut la minimiser en annulant 
+sa dérivée. 
+Cependant cette fonction dépend de tous les $w^{l}$ et $b^{l}$ ainsi que de la fonction 
+$\sigma$, le calcul de la dérivée et de son point d'annulation n'est dans pas facile.
+C'est pourquoi on va opter pour un algorithme itératif qui, partant d'un point quelconque 
+(i.e.\/ un couple $(w,b)$ donné), va prograssivement s'approcher de la solution. 
+
+L'un des algorithmes les plus simples est celui de la descente de gradient.
+Partant d'un point $v = (w,b)$, on souhaite trouver $\Delta v$ telle que 
+$C(v + \Delta v) \leq C(v)$. Cet algorithme propose de prendre 
+$\Delta v = -\eta\nabla C(v)$ avec $\eta$ suffisament petit pour que 
+l'on puisse s'assurer de diminuer le coût $C$ et suffisament grand pour que les 
+effets soient significatifs.
+
+L'algorithme peut donc se résumer sous la forme suivante:
+\begin{enumerate}
+  \item étant donné $v = (w, b)$, calculer $\nabla C(v)$;
+  \item calculer $v' = v - \eta \nabla C(v)$;
+  \item recommencer l'étape 1 avec $v'$.
+\end{enumerate}
+On itère jusqu'à ce que le coût soit proche de son minimum.
+
+En pratique on utilisera une variante stochastique de l'algorithme. 
+En effet, 
+\[
+C = \frac{1}{2n} \sum_{x} C_x \qquad \text{avec} \quad C_x = \vecnorm{y(x) - a(x)}^2
+\]
+sera d'autant plus long à calculer que $n$ (la taille de l'échantillon d'apprentissage) 
+est grand.
+C'est pourquoi on tirera $m < n$ entrées au hasard et on se contentera de calculer 
+le coût et son gradient sur ce sous-échantillon.
 
 
 
 \section{L'algorithme de rétro-propagation}
 
 
+L'algorithme de descente de gradient évoqué précédemment est en principe 
+très simple. Cependant, le calcul de $\nabla C(v)$ est loin d'être simple. 
+Cette quantité dépend en effet de tous les $w_{jk}^{l}$ et les $b_{j}^{l}$.
+On présente dans cette partie une manière simple de calculer cette quantité 
+via l'algorithme de rétro-propagation. 
+Il est cependant nécessaire d'introduire d'abord quelques quantités utiles.
+
+Comme on la vu dans la partie précédente, le coût $C$ s'écrit comme somme 
+de coûts unitaire:
+\[
+C = \frac{1}{2n} \sum_{x} C_x
+\]
+Dans cette partie, on s'intéressa seulement au calcul de la quantité $C_x$ pour un $x$ donné. 
+La vrai coût $C$ et $\nabla C$ se calculant simplement en faisant la somme.
+On se fixe donc un $x$ et, pour simplifier les notations, on notera $a = a(x)$ 
+la sortie voulu et $C = C_x$.
+
+\begin{definition}[Activation d'un neurone]
+On appellera activation du neurone $j$ de la couche $l$ la quantité $a_{j}^{l}$ 
+définie par:
+\[
+a_{j}^{l} = \sigma \left( \sum_{k} w_{jk}^{l} a_{k}^{l-1} + b_{j}^{l} \right)
+\]
+Il s'agit simplement de la sortie de ce neurone.
+\end{definition}
+
+
+\begin{proposition}
+On a l'écriture vectorielle suivante:
+\[
+a^{l} = \sigma ( w^{l} a^{l-1} + b^{l} )
+\]
+\end{proposition}
+
+
+\begin{definition}[Entrées pondérées d'un neurone]
+On notera $z_{j}^{l}$ les entrées pondérées du neurone $j$ de la couche $l$.
+\[
+z_{j}^{l} = \sum_{k} w_{jk}^{l} a_{k}^{l-1} + b_{j}^{l}
+\]
+\end{definition}
+
+De manière évidente, on a $a_{j}^{l} = \sigma(z_{j}^{l})$.
+
+
+\begin{definition}[Erreur d'un neurone]
+On définit l'erreur au neurone $j$ de la couche $l$ par:
+\[
+\delta_{j}^{l} = \frac{\partial C}{\partial z_{j}^{l}}
+\]
+\end{definition}
+
+
+\begin{definition}[Produit de Hadamard]
+Soit $S$ et $T$ deux matrices (ou vecteurs) de même dimension, on appelle 
+produit de Hadamard de $S$ et $T$, noté $S \odot T$ la matrice de même dimension 
+que $T$ et donc les composantes sont les produits éléments par éléments des 
+coefficients de $S$ et $T$, i.e.\/
+\[
+(S \odot T)_{ij} = S_{ij} \times T_{ij}
+\]
+\end{definition}
+
+
+
+\begin{proposition}[Equations de la rétro-propagation]
+On a les relations suivantes: \\
+Erreur au niveau de la dernière couche: 
+\begin{equation}
+\delta^{L} = \nabla_{a} C \odot \sigma'(z^{L})
+\end{equation}
+Erreur au niveau de la couche $l$:
+\begin{equation}
+\delta^{l} = ((w^{l+1})^T \delta^{l+1}) \odot \sigma'(z^{l})
+\end{equation}
+Dérivées partielles par rapport aux biais:
+\begin{equation}
+\frac{\partial C}{\partial b_{j}^{l}} = \delta_{j}^{l}
+\end{equation}
+Dérivées partielles par rapport aux poids:
+\begin{equation}
+\frac{\partial C}{\partial w_{jk}^{l}} = a_{k}^{l-1} \delta_{j}^{l}
+\end{equation}
+\end{proposition}
