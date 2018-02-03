@@ -411,7 +411,7 @@ On itère jusqu'à ce que le coût soit proche de son minimum.
 En pratique on utilisera une variante stochastique de l'algorithme. 
 En effet, 
 \[
-C = \frac{1}{2n} \sum_{x} C_x \qquad \text{avec} \quad C_x = \vecnorm{y(x) - a(x)}^2
+C = \frac{1}{n} \sum_{x} C_x \qquad \text{avec} \quad C_x = \frac{1}{2} \vecnorm{y(x) - a(x)}^2
 \]
 sera d'autant plus long à calculer que $n$ (la taille de l'échantillon d'apprentissage) 
 est grand.
@@ -433,7 +433,7 @@ Il est cependant nécessaire d'introduire d'abord quelques quantités utiles.
 Comme on la vu dans la partie précédente, le coût $C$ s'écrit comme somme 
 de coûts unitaire:
 \[
-C = \frac{1}{2n} \sum_{x} C_x
+C = \frac{1}{n} \sum_{x} C_x
 \]
 Dans cette partie, on s'intéressa seulement au calcul de la quantité $C_x$ pour un $x$ donné. 
 La vrai coût $C$ et $\nabla C$ se calculant simplement en faisant la somme.
