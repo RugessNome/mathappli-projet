@@ -231,10 +231,10 @@ ce qui nous servira plus tard dans le cadre de l'apprentissage.
 
 \begin{definition}[Modélisation d'un neurone]
 En notant $b$ le biais du neurone, $w$ son vecteur des poids et $\sigma$ sa fonction 
-d'activation, on peut écrire la sortie $y$ d'un neurone en fonction de son entrée $x$ 
+d'activation, on peut écrire la sortie $a$ d'un neurone en fonction de son entrée $x$ 
 de la manière suivante:
 \[
-y = \sigma(w \cdot x + b)
+a = \sigma(w \cdot x + b)
 \]
 \end{definition}
 
@@ -299,21 +299,21 @@ On a alors la proposition suivante:
 Soit une couche d'un réseau constituée de $n$ neurones et ayant pour matrice 
 des poids $w$ et pour vecteur des biais $b$. Si les neurones ont tous la même 
 fonction d'activation $\sigma$, on peut écrire les sorties des neurones sous la 
-forme d'un vecteur $y$ vérifiant:
+forme d'un vecteur $a$ vérifiant:
 \[
-y = \sigma(w \cdot x + b)
+a = \sigma(w \cdot x + b)
 \]
-où les $y_i$ correspondent à la sortie du neurones $i$.
+où les $a_i$ correspondent à la sortie du neurone $i$.
 \end{proposition}
 
 On notera que dans cette proposition, on utilise la version vectorisée de $\sigma$.
 Une écriture équivalente est:
 \[
 \begin{pmatrix}
-  y_1 \\
-  y_2 \\
+  a_1 \\
+  a_2 \\
   \vdots \\
-  y_n
+  a_n
 \end{pmatrix}
  = 
 \begin{pmatrix}
@@ -335,16 +335,28 @@ de neurones à plusieurs couches.
 En notant $w^{1}, w^{2}, \cdots, w^{L}$ les matrices de poids de $L$ couches de 
 neurones, et $b^{1}, b^{2}, \cdots, b^{L}$ les vecteurs des biais associés, et 
 en supposant que tous les neurones ont pour fonction d'activation $\sigma$, on 
-peut écrire la sortie du réseau complet de manière condensée:
-\[
-y = \sigma(b^{L} + w^{L} \cdot \sigma(b^{L-1} + w^{L-1} \cdot \sigma(\cdots)))
-\]
+\begin{equation}
+\label{eq:condensed-multilayer-expression}
+a = \sigma(b^{L} + w^{L} \cdot \sigma(b^{L-1} + w^{L-1} \cdot \sigma(\cdots)))
+\end{equation}
 
-ou, de manière un peu plus lisible.
+Pour avoir une écriture plus lisible, on introduit la notion suivante qui 
+permet de parler de la sortie pour toute couche:
+\begin{definition}[Activation d'un neurone]
+On appellera activation du neurone $j$ de la couche $l$ la quantité $a_{j}^{l}$ 
+définie par:
+\[
+a_{j}^{l} = \sigma \left( \sum_{k} w_{jk}^{l} a_{k}^{l-1} + b_{j}^{l} \right)
+\]
+Il s'agit simplement de la sortie de ce neurone.
+\end{definition}
+
+On peut alors réécrire l'équation \ref{eq:condensed-multilayer-expression} de la 
+manière suivante, la sortie du réseau étant le vecteur $a^{L}$.
 \[
 \begin{cases}
- y^{l} = \sigma(w^{l} \cdot y^{l-1} + b^{l}) \\
- y^{0} = x \\
+ a^{l} = \sigma(w^{l} \cdot a^{l-1} + b^{l}) \\
+ a^{0} = x \\
 \end{cases}
 \]
 
@@ -377,14 +389,17 @@ on se ramène à un problème d'optimisation.
 
 \begin{definition}[Fonction de coût quadratique]
 Soit $X$ un ensemble d'apprentissage de cardinal $n$. 
-On note $y(x)$ la sortie du réseau de neurones pour l'entrée $x \in X$ et 
-$a(x)$ la sortie désirée. On définit la fonction de coût par:
+On note $a^{L}(x)$ la sortie du réseau de neurones pour l'entrée $x \in X$ et 
+$y_{x}$ la sortie désirée. On définit la fonction de coût par:
 \[
-C(w, b) = \frac{1}{2n} \sum_{x} \vecnorm{y(x) - a(x)}^2
+C(w, b) = \frac{1}{2n} \sum_{x} \vecnorm{y_{x} - a^{L}(x)}^2
 \]
 \end{definition}
 
 On parle aussi de \textsc{MSE} pour \nfw{mean square error}.
+
+Par la suite, et pour alléger les notations, on écrira souvent $a^{L}$ et $y$ 
+au lieu de $a^{L}(x)$ et $y_x$.
 
 Cette fonction à le bon goût d'être convexe. Ainsi, on peut la minimiser en annulant 
 sa dérivée. 
@@ -411,7 +426,7 @@ On itère jusqu'à ce que le coût soit proche de son minimum.
 En pratique on utilisera une variante stochastique de l'algorithme. 
 En effet, 
 \[
-C = \frac{1}{n} \sum_{x} C_x \qquad \text{avec} \quad C_x = \frac{1}{2} \vecnorm{y(x) - a(x)}^2
+C = \frac{1}{n} \sum_{x} C_x \qquad \text{avec} \quad C_x = \frac{1}{2} \vecnorm{y - a^{L}}^2
 \]
 sera d'autant plus long à calculer que $n$ (la taille de l'échantillon d'apprentissage) 
 est grand.
@@ -437,25 +452,8 @@ C = \frac{1}{n} \sum_{x} C_x
 \]
 Dans cette partie, on s'intéressa seulement au calcul de la quantité $C_x$ pour un $x$ donné. 
 La vrai coût $C$ et $\nabla C$ se calculant simplement en faisant la somme.
-On se fixe donc un $x$ et, pour simplifier les notations, on notera $a = a(x)$ 
+On se fixe donc un $x$ et, pour simplifier les notations, on notera $y = y_x$ 
 la sortie voulu et $C = C_x$.
-
-\begin{definition}[Activation d'un neurone]
-On appellera activation du neurone $j$ de la couche $l$ la quantité $a_{j}^{l}$ 
-définie par:
-\[
-a_{j}^{l} = \sigma \left( \sum_{k} w_{jk}^{l} a_{k}^{l-1} + b_{j}^{l} \right)
-\]
-Il s'agit simplement de la sortie de ce neurone.
-\end{definition}
-
-
-\begin{proposition}
-On a l'écriture vectorielle suivante:
-\[
-a^{l} = \sigma ( w^{l} a^{l-1} + b^{l} )
-\]
-\end{proposition}
 
 
 \begin{definition}[Entrées pondérées d'un neurone]
