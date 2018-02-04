@@ -445,16 +445,6 @@ On présente dans cette partie une manière simple de calculer cette quantité
 via l'algorithme de rétro-propagation. 
 Il est cependant nécessaire d'introduire d'abord quelques quantités utiles.
 
-Comme on la vu dans la partie précédente, le coût $C$ s'écrit comme somme 
-de coûts unitaire:
-\[
-C = \frac{1}{n} \sum_{x} C_x
-\]
-Dans cette partie, on s'intéressa seulement au calcul de la quantité $C_x$ pour un $x$ donné. 
-La vrai coût $C$ et $\nabla C$ se calculant simplement en faisant la somme.
-On se fixe donc un $x$ et, pour simplifier les notations, on notera $y = y_x$ 
-la sortie voulu et $C = C_x$.
-
 
 \begin{definition}[Entrées pondérées d'un neurone]
 On notera $z_{j}^{l}$ les entrées pondérées du neurone $j$ de la couche $l$.
@@ -466,12 +456,56 @@ z_{j}^{l} = \sum_{k} w_{jk}^{l} a_{k}^{l-1} + b_{j}^{l}
 De manière évidente, on a $a_{j}^{l} = \sigma(z_{j}^{l})$.
 
 
+Comme on la vu dans la partie précédente, le coût $C$ s'écrit comme somme 
+de coûts unitaire:
+\[
+C = \frac{1}{n} \sum_{x} C_x
+\]
+Dans cette partie, on s'intéressa seulement au calcul de la quantité $C_x$ pour un $x$ donné. 
+La vrai coût $C$ et $\nabla C$ se calculant simplement en faisant la somme.
+On se fixe donc un $x$ et, pour simplifier les notations, on notera $y = y_x$ 
+la sortie voulu et $C = C_x$.
+
+L'idée de l'algorithme de rétro-propagation est de partir d'une quantité que 
+l'on peut facilement calculer à partir de la sortie du réseau (que l'on obtient 
+en faisant un \nfw{feedforward}, c'est à dire en parcourant le réseau depuis la 
+première couche jusqu'à la dernière) et de revenir en arrière (\nfw{retropopagation}) 
+pour attribuer à chaque coefficient du réseau une part de l'erreur.
+
+Notons $a^L$ la sortie du réseau, on a:
+\[
+C = \frac{1}{2} \vecnorm{y - a^L}^2 = \frac{1}{2} \sum_{j} (y_j - a_{j}^{L})^2
+\]
+On obtient donc très facilement le résultat suivant.
+\[
+\frac{\partial C}{\partial a_{j}^{L}} = (a_{j}^{L} - y_j)
+\]
+Que l'on écrira sous forme vectorielle.
+\[
+\nabla_a C = a^{L} - y 
+\]
+
+La principe de l'algorithme de rétro-propagation va être de partir de cette 
+quantité et de parcourir les couches du réseau à l'envers pour calculer les 
+dérivées partielles $\frac{\partial C}{\partial w_{jk}^{l}}$ et $\frac{\partial C}{\partial b_{j}^{l}}$.
+
 \begin{definition}[Erreur d'un neurone]
 On définit l'erreur au neurone $j$ de la couche $l$ par:
 \[
 \delta_{j}^{l} = \frac{\partial C}{\partial z_{j}^{l}}
 \]
 \end{definition}
+
+Cette définition est posée de manière un peu arbitraire et permet simplement 
+de simplifier l'écriture des calculs que nous ferrons plus tard. 
+Une autre définition possible aurait été de prendre l'erreur comme étant égale 
+à $\frac{\partial C}{\partial a_{j}^{l}}$. Cela ne change pas grand chose car on 
+a la relation suivante.
+
+\[
+\frac{\partial C}{\partial z_{j}^{l}} = \frac{\partial C}{\partial a_{j}^{l}} \frac{\partial a_{j}^{l}}{\partial z_{j}^{l}}
+= \frac{\partial C}{\partial a_{j}^{l}} \frac{\partial \sigma(z_{j}^{l})}{\partial z_{j}^{l}} = \frac{\partial C}{\partial a_{j}^{l}} \sigma'(z_{j}^{l})
+\]
 
 
 \begin{definition}[Produit de Hadamard]
@@ -490,18 +524,91 @@ coefficients de $S$ et $T$, i.e.\/
 On a les relations suivantes: \\
 Erreur au niveau de la dernière couche: 
 \begin{equation}
+  \label{eq:bp1}
 \delta^{L} = \nabla_{a} C \odot \sigma'(z^{L})
 \end{equation}
 Erreur au niveau de la couche $l$:
 \begin{equation}
+  \label{eq:bp2}
 \delta^{l} = ((w^{l+1})^T \delta^{l+1}) \odot \sigma'(z^{l})
 \end{equation}
 Dérivées partielles par rapport aux biais:
 \begin{equation}
+  \label{eq:bp3}
 \frac{\partial C}{\partial b_{j}^{l}} = \delta_{j}^{l}
 \end{equation}
 Dérivées partielles par rapport aux poids:
 \begin{equation}
+  \label{eq:bp4}
 \frac{\partial C}{\partial w_{jk}^{l}} = a_{k}^{l-1} \delta_{j}^{l}
 \end{equation}
 \end{proposition}
+
+Ces équations nous donnent une méthode simple pour calculer les dérivées partielles 
+par rapport aux coefficients du réseau et permettent ainsi d'appliquer la méthode 
+de la descente de gradient.
+
+\begin{proof}[Preuve de l'équation \ref{eq:bp1}]
+Il suffit de reprendre ce que l'on a fait précédemment. 
+\[
+\delta_{j}^{L} = \frac{\partial C}{\partial z_{j}^{L}} = \frac{\partial C}{\partial a_{j}^{L}} \sigma'(z_{j}^{L})
+\]
+Soit sous forme vectorielle,
+\[
+\delta^{L} = \frac{\partial C}{\partial a^{L}} \odot \sigma'(z^{L})
+\]
+quantité que l'on écrit $\nabla_{a} C \odot \sigma'(z^{L})$.
+\end{proof}
+
+\vspace{1em}
+
+Le résultat \ref{eq:bp2} est certainement le plus intéressant car c'est lui qui permet 
+de remonter le réseau pour attribuer les erreurs aux différentes couches. 
+Il dit grossièrement que pour retrouver l'erreur à la couche $l$, il suffit 
+d'appliquer la transposée de la matrice de poids de la couche $l+1$ à l'erreur 
+sur cette même couche et de multiplier par la dérivée de la sigmoïde.
+
+\begin{proof}[Preuve de l'équation \ref{eq:bp2}]
+On applique un raisonnement similaire à la preuve précédente.
+\begin{align}
+  \delta_{j}^{l} &= \frac{\partial C}{\partial z_{j}^{l}} \\
+                 &= \sum_{k} \frac{\partial C}{\partial z_{k}^{l+1}} \frac{\partial z_{k}^{l+1}}{\partial z_{j}^{l}} \\
+				 &= \sum_{k} \frac{\partial z_{k}^{l+1}}{\partial z_{j}^{l}} \delta_{k}^{l+1}
+\end{align}
+On se remémore ensuite l'expression de $z_{k}^{l+1}$:
+\[
+z_{k}^{l+1} = \sum_{i} w_{ki}^{l+1} a_{i}^{l} + b_{k}^{l+1} = \sum_{i} w_{ki}^{l+1} \sigma(z_{i}^{l}) + b_{k}^{l+1}
+\]
+Ce qui nous permet d'obtenir
+\[
+\frac{\partial z_{k}^{l+1}}{\partial z_{j}^{l}} = w_{kj}^{l+1} \sigma'(z_{j}^{l})
+\]
+On obtient donc le résultat voulu
+\[
+\delta_{j}^{l} = \sum_{k} w_{kj}^{l+1} \delta_{k}^{l+1} \sigma'(z_{j}^{l})
+\]
+\end{proof}
+
+\vspace{1em}
+
+Les deux derniers résultats servent à relier les quantités calculées aux 
+quantités voulues.
+
+\begin{proof}[Preuve de l'équation \ref{eq:bp3}]
+\[
+\frac{\partial C}{\partial b_{j}^{l}} = \frac{\partial C}{\partial z_{j}^{l}} \frac{\partial z_{j}^{l}}{\partial b_{j}^{l}}
+\]
+Or on sait que $z_{j}^{l} = \sum_{k} w_{jk}^{l} a_{k}^{l-1} + b_{j}^{l}$ donc la dérivée deuxième vaut $1$.
+Au final,
+\[
+\frac{\partial C}{\partial b_{j}^{l}} = \frac{\partial C}{\partial z_{j}^{l}} = \delta_{j}^{l}
+\]
+\end{proof}
+
+\begin{proof}[Preuve de l'équation \ref{eq:bp4}]
+$z_{j}^{l} = \sum_{i} w_{ji}^{l} a_{i}^{l-1} + b_{j}^{l}$ donc $\frac{\partial z_{j}^{l}}{\partial w_{jk}^{l}} = a_{k}^{l-1}$.
+Ainsi, 
+\[
+\frac{\partial C}{\partial w_{jk}^{l}} = a_{k}^{l-1} \delta_{j}^{l}
+\]
+\end{proof}
