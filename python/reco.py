@@ -83,3 +83,23 @@ def example1():
     for i in range(10):
         print('Prediction = ', r.predict(images[i]))
         print('Expected = ', labels[i])
+
+
+def example2():
+    import network
+    net = network.Network([28*28, 30, 10])
+    training = mnist.load('training', mnist.MNIST_FORMAT_LIST_OF_PAIR)
+    test = mnist.load('test', mnist.MNIST_FORMAT_LIST_OF_PAIR)
+
+    def vectorize(y):
+        # Turns a desired output (e.g. 7) into a vector having a single 1
+        # at the desired position (e.g. (0, 0, 0, 0, 0, 0, 1, 0, 0))
+        ret = np.zeros(10)
+        ret[y] = 1
+        return ret
+
+    training = [(x.reshape(28*28) / 255, vectorize(y)) for x,y in training]
+    test = [(x.reshape(28*28) / 255, y) for x,y in test]
+
+    net.fit(training, 30, 10, 3.0, test)
+
