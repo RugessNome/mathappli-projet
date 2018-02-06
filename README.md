@@ -60,3 +60,14 @@ python features.py
 Le temps de calcul est assez long (~ 1 heure), mais n'est à effectuer 
 qu'une seule fois. Après quoi, les données sont écrites dans le répertoire 
 `cache`.
+
+
+## Reconnaissance avec des réseaux convolutifs
+
+Le fichier `cnn.py` implémente un réseau convolutifs en utilisant la 
+bibliothèque Python `keras`.
+Les données fournies en entrées sont similaires à celles utilisées 
+pour le réseau simple (pas d'utilisation de *features*). 
+
+On obtient avec cette méthode un taux de reconnaissance de l'ordre 
+de 99%.
