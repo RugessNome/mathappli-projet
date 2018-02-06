@@ -123,3 +123,34 @@ avec
 
 
 \section{Transformée de Fourier de l'image}
+
+On utilise la fonction \tcode{rfft} de la bibliothèque \tcode{scipy.fftpack} sur 
+l'image en niveaux de gris pour passer dans le domaine de Fourier.
+La fonction renvoie une image de même taille que l'entrée.
+
+L'image dans le domaine de Fourier est la décomposition de l'image dans le domaine 
+fréquentiel.
+Il est possible de visualiser de reconstruire l'image en utilisant la 
+fonction \tcode{irfft} de la même bibliothèque.
+Cette fonction permet également de visualiser la base utilisée dans le domaine 
+fréquentiel (c.f.\/ figure \ref{fig:freq-basis}).
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[scale=0.6]{assets/fft-basis}
+  \caption{Premiers éléments de la base de Fourier.}
+  \label{fig:freq-basis}
+\end{figure}
+
+La figure \ref{fig:fft-image-reconstruction} montre la reconstruction d'une 
+image en ajoutant progressivement des fréquences.
+La figure se lit de gauche à droite et de haut en bas. 
+L'image numéro $i$ est reconstruite à partir de tous les coefficients 
+d'ordre $p,q < i$ soit $i^2$ coefficients.
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[scale=0.6]{assets/fft-image-num62-reconstruction}
+  \caption{Reconstruction d'un $6$.}
+  \label{fig:fft-image-reconstruction}
+\end{figure}

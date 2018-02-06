@@ -248,13 +248,13 @@ def fft_test(index = 62, harmo = 8):
     imgback = freq2im(fft)
     show(imgback * 255)
 
-def fft_figure():
+def fft_basis_figure(nbrow = 3, nbcol = 3):
     from matplotlib import pyplot
     import matplotlib as mpl
-    fig, axs = pyplot.subplots(3, 3)
+    fig, axs = pyplot.subplots(nbrow, nbcol)
     #fig.set_size_inches(w/100, h/100)
-    for i in range(3):
-        for j in range(3):
+    for i in range(nbrow):
+        for j in range(nbcol):
             fft = np.zeros((28,28))
             fft[i][j] = 1
             imgplot = axs[i, j].imshow(freq2im(fft), cmap=mpl.cm.Greys)
@@ -265,6 +265,24 @@ def fft_figure():
     axs[0, 0].yaxis.set_ticks_position('left')
     pyplot.show()
 
+
+def fft_reconstruction_figure(image, nbrow = 3, nbcol = 3):
+    from matplotlib import pyplot
+    import matplotlib as mpl
+    img = image / 255
+    fft_image = im2freq(img)
+    fig, axs = pyplot.subplots(nbrow, nbcol)
+    #fig.set_size_inches(w/100, h/100)
+    for i in range(nbrow):
+        for j in range(nbcol):
+            fft_reconstruct = np.zeros((28,28))
+            for ii in range(i*nbcol+j+2):
+                for jj in range(i*nbcol+j+2):
+                    fft_reconstruct[ii][jj] = fft_image[ii][jj]
+            imgplot = axs[i, j].imshow(freq2im(fft_reconstruct), cmap=mpl.cm.Greys)
+            imgplot.set_interpolation('nearest')
+            axs[i, j].axis('off')
+    pyplot.show()
 
 def fourier_image_coefficients(img):
     img = img / 255
