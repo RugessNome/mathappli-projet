@@ -225,7 +225,7 @@ freq2im = lambda f: fp.irfft(fp.irfft(f, axis=1), axis=0)
 
 
 def fft_test(index = 62, harmo = 8):
-    label, img = training_data[index]
+    img, label = training_data[index]
     
     show(img)
     
@@ -238,8 +238,12 @@ def fft_test(index = 62, harmo = 8):
             print("fft({},{}) = {}".format(i, j, fft[i][j]))
     
     for i in range(harmo, 28):
-        for j in range(harmo, 28):
+        for j in range(28):
             fft[i][j] = 0
+    for j in range(harmo, 28):
+        for i in range(28):
+            fft[i][j] = 0
+    print((fft != 0.).sum(), " coefficients")
     
     imgback = freq2im(fft)
     show(imgback * 255)
