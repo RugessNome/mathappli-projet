@@ -16,6 +16,22 @@ algorithmes.
 Plusieurs techniques de reconnaissance ont été mises en place.
 
 
+## Reconnaissance avec un réseau de neurones simple
+
+Le fichier `network.py` implémente un réseau de neurones utilisant la fonction 
+d'activation sigmoïde et la méthode de la descente de gradient stochastique 
+pour l'apprentissage. 
+
+Chaque image du jeu d'entraînement est redimenssionnée en un vecteur de 784 réels 
+compris entre 0 et 1. Ce vecteur est donné directement en entré du réseau. 
+La sortie du réseau est un vecteur de taille 10, correspondant aux 10 chiffres 
+que l'on souhaite reconnaître.
+
+En choisissant d'utiliser une seule couche cachée de 30 neurones et un taux 
+d'apprentissage de `3.0`, on peut obtenir un taux de reconnaissance de l'ordre 
+de 95% sur le jeu de test. 
+
+
 ## Reconnaissance basée sur l'extraction de *features*
 
 Cette technique consiste à extraire des images des données statistiques ou 
