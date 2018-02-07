@@ -566,6 +566,22 @@ def plot_fourier_approx(img, n, m, normalized = False):
     plt.plot(X, Y)
     plt.show()
 
+def fourier_approx_figure(img, nbrow = 3, nbcol = 3, normalized = False):
+    from matplotlib import pyplot
+    spt, chain = extract_contour(img)
+    fig, axs = pyplot.subplots(nbrow, nbcol)
+    for i in range(nbrow):
+        for j in range(nbcol):
+            result = fourier_approx(chain, i*nbcol + j + 1, 200, False)
+            X = []
+            Y = []
+            for x, y in result:
+                X.append(x)
+                Y.append(y)
+            imgplot = axs[i, j].plot(X, Y)
+            axs[i, j].axis('off')
+    pyplot.show()
+
 def plot_contour(img):
     spt, chain = extract_contour(img)
     show(freeman_chain_img(spt, chain))

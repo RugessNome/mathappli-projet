@@ -120,6 +120,72 @@ avec
 
 \section{Transformée de Fourier du contour}
 
+On s'intéresse ici au contour des chiffres. 
+On peut voir le contour comme une fonction périofique 
+de $\mathbb{R}$ dans $\mathbb{R}^2$. 
+On peut donc lui appliquer une transformée de Fourier pour 
+en récupérer un spectre de fréquence. 
+En conservant les plus faibles fréquences, on s'intéressera à 
+la forme générale du contour sans considérer les détails.
+
+En pratique, on travaille avec un contour discret. 
+Dans notre cas, ce contour est stocké en utilisant le codage 
+de chaînes de Freeman.
+Il s'agit simplement d'un codage indiquant les directions à suivre 
+pour tracer le contour (e.g.\/ nord, sub, nord-est, etc...).
+Si l'on ajoute à cela un point de départ, on est en mesure de 
+reconstruire le contour à partir de la chaîne.
+
+Nous avons implémenté une fonction permettant de calculer le 
+contour d'une image.
+Voici en quelques mots son principe de fonctionnement. 
+On commence par partir du pixel situé en haut à droite de l'image 
+et on parcours les pixels de gauche à droite et de haut an bas 
+jusqu'à trouver un pixel colorié. 
+On prend comme point de départ le dernier pixel non colorié sur lequel 
+on est passé.
+On simule ensuite le comportement d'une coccinelle qui serait posée sur 
+sur ce pixel et qui serait orientée direction nord-ouest. 
+Le but de la coccinelle est d'avancer en maintenant toujours à sa 
+droite les pixels coloriés. 
+Pour avancer, elle regarde, à partir de sa direction actuelle, quelle 
+est la case la plus à droite qu'elle peut atteindre sans faire demi-tour.
+Si la première case à droite qu'elle peut atteindre correspond à un demi-tour, 
+elle regarde la première case à sa gauche qu'elle peut atteindre.
+[Note: il y a quelques autres subtilités non décrites ici pour simplifier, 
+le code est disponible dans le fichier \tcode{features.py}]
+L'algorithme se termine quand la coccinelle revient à son point de départ.
+
+\begin{figure}[h!]
+    \centering
+    \begin{subfigure}[b]{0.4\textwidth}
+        \centering
+        \includegraphics[scale=0.45]{assets/training-image-12}
+    \end{subfigure}%
+    ~ 
+    \begin{subfigure}[b]{0.4\textwidth}
+        \centering
+        \includegraphics[scale=0.45]{assets/training-image-12-contour}
+    \end{subfigure}
+    \caption{Contour calculé du chiffre 3.}
+\end{figure}
+
+On peut ensuite appliquer une transformée de Fourier à ce contour 
+discret. 
+La figure \ref{fig:contour-reconstruction} montre la reconstruction 
+du contour de l'exemple précédent en ajoutant à chaque étape des 
+composantes (on commence à l'ordre 1 pour finir à l'ordre 12). 
+
+\begin{figure}[h!]
+  \centering
+  \includegraphics[scale=0.8]{assets/fourier-contour-image12-reconstruction}
+  \caption{Reconstruction d'un contour.}
+  \label{fig:contour-reconstruction}
+\end{figure}
+
+Cette figure permet d'estimer un intervalle d'ordres que l'on pourrait 
+utiliser comme \nfw{feature}.
+
 
 
 \section{Transformée de Fourier de l'image}
