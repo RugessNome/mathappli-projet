@@ -124,6 +124,20 @@ class Network(object):
         """
         return (output_activations-y)
 
+    def save(self, name='ann'):
+        import os
+        import os.path
+        if not os.path.isdir("cache/"):
+            os.mkdir('cache')
+        np.save('cache/' + name + '_weights', np.array(self.weights))
+        np.save('cache/' + name + '_biases', np.array(self.biases))
+
+    def load(self, name='ann'):
+        self.weights = np.load('cache/' + name + '_weights.npy')
+        self.biases = np.load('cache/' + name + '_biases.npy')
+        self.num_layers = len(self.biases)
+        self.sizes = [len(b) for b in self.biases]
+
 def sigmoid(z):
     return 1.0/(1.0+np.exp(-z))
 
