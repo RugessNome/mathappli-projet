@@ -70,6 +70,18 @@ def build_classifier():
     classifier.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
     return classifier
 
+def save_classifier(classifier, name='cnn'):
+    import os
+    import os.path
+    if not os.path.isdir("cache/"):
+        os.mkdir('cache')
+    classifier.save('cache/' + name)
+
+def load_classifier(name='cnn'):
+    from keras.models import load_model
+    global classifier
+    classifier = load_model('cache/' + name)
+    return classifier
 
 # Fits the model
 def fit_model(epochs = 10, batch_size = 32):
