@@ -87,7 +87,9 @@ def load_classifier(name='cnn'):
 def fit_model(epochs = 10, batch_size = 32):
     global classifier
     classifier = build_classifier()
-    classifier.fit(X_train, y_train_vect, validation_data = (X_test, y_test_vect), epochs = epochs, batch_size=batch_size)
+    from sklearn.model_selection import train_test_split
+    X, X_validation, y, y_validation = train_test_split(X_train, y_train_vect, test_size=10000, random_state=42)
+    classifier.fit(X, y, validation_data = (X_validation, y_validation), epochs = epochs, batch_size=batch_size)
     
 # Evaluates the model : variance and mean of accuracy (takes a long time)
 def eval_model(nb_epochs = 10, batch_size = 32, cv = 10):
