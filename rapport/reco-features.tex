@@ -309,11 +309,12 @@ utiliser comme \nfw{feature}.
 
 On utilise la fonction \tcode{rfft} de la bibliothèque \tcode{scipy.fftpack} sur 
 l'image en niveaux de gris pour passer dans le domaine de Fourier.
-La fonction renvoie une image de même taille que l'entrée.
+La procédure, qui consiste en une double appel à \tcode{rfft}, renvoie une image 
+de même taille que l'entrée.
 
 L'image dans le domaine de Fourier est la décomposition de l'image dans le domaine 
 fréquentiel.
-Il est possible de visualiser de reconstruire l'image en utilisant la 
+Il est possible de reconstruire l'image en utilisant la 
 fonction \tcode{irfft} de la même bibliothèque.
 Cette fonction permet également de visualiser la base utilisée dans le domaine 
 fréquentiel (c.f.\/ figure \ref{fig:freq-basis}).
@@ -339,3 +340,84 @@ d'ordre $p,q < i$ soit $i^2$ coefficients.
 \end{figure}
 
 
+Dans ce qui suit, on se propose d'expliquer les calculs effectués 
+par la fonction \tcode{rfft}.
+
+\renewcommand{\Re}{\operatorname{Re}}
+\renewcommand{\Im}{\operatorname{Im}}
+\let\conjugatet\overline
+
+Soit $x = (x_0, \cdots, x_{2n-1})$ un vecteur réel de taille $2n$.
+
+On définie la transformée de Fourier discrète de $x$ par un vecteur 
+$y$ de même taille dont les composantes sont:
+\[
+y_j = \sum_{k = 0}^{2n-1} x_k \exp\left(-\frac{2ijk\pi}{2n}\right)
+\]
+
+On remarque que $y_j = \operatorname{Conj} y_{2n-j}$. 
+Ainsi, seules les valeurs $y_j$ pour $j \leq n$ sont utiles.
+De plus, pour $j = n$, on obtient $y_n = \operatorname{Conj} y_{n}$, 
+donc la partie imaginaire de $y_n$ est nulle.
+Enfin, $y_0$ est un réel.
+Ainsi, on peut encoder toute l'information contenue 
+dans les $y_j$ pour $j$ de $0$ à $2n-1$ dans de vecteur réel 
+$f(x)$ de taille $2n$ définit ci-après.
+\[
+f(x) = 
+\begin{pmatrix}
+  y_0 \\
+  \Re(y_1) \\
+  \Im(y_1) \\
+  \vdots \\
+  \Re(y_{n-1}) \\
+  \Im(y_{n-1}) \\
+  \Re(y_n)
+\end{pmatrix}
+\]
+
+Il est possible de reconstruire $x$ à partir de sa transformée.
+
+\begin{align*}
+x^{*}_j &= \frac{1}{2n} \sum_{k=0}^{2n-1} y_k \exp\left( \frac{2ijk\pi}{2n} \right)  \\
+        &= \frac{1}{2n} \sum_{k=0}^{2n-1} \sum_{l = 0}^{2n-1} x_l \exp\left(-\frac{2ikl\pi}{2n}\right) \exp\left( \frac{2ijk\pi}{2n} \right) \\
+		&= \frac{1}{2n} \sum_{l=0}^{2n-1} \sum_{k = 0}^{2n-1} x_l \exp\left(\frac{2ik(j-l)\pi}{2n}\right) 
+\end{align*}
+
+Pour $l = j$, les termes de la seconde somme valent tous $x_l$ et il y en a 
+$2n$, on se retrouve donc avec $2n x_l$. \\
+Pour $l \neq j$, on a la somme suivante:
+\[
+x_l \sum_{k = 0}^{2n-1} \exp\left(\frac{2i(j-l)\pi}{2n}\right)^k 
+\]
+qui est une somme géométrique valant
+\[
+x_l \times \frac{1-\exp\left(\frac{2i(j-l)\pi}{2n}\right)^{2n}}{1-\exp\left(\frac{2i(j-l)\pi}{2n}\right)} = 0
+\]
+(que l'on peut également voir comme une somme des racines $2n$-ème de l'unité)
+
+Au final, $x^{*}_j = x_j$.
+
+Une autre écriture de $x^{*}_j$, que l'on utilisera en pratique, est donnée par:
+
+\[
+x^{*}_j = \frac{1}{2n} \left[ \sum_{k=1}^{n-1} \left[ y_k \exp\left( \frac{2ijk\pi}{2n} \right) 
+          + \overline{y_k} \exp\left(-\frac{2ijk\pi}{2n} \right) \right]
+		  + y_0 + (-1)^{j} y_n \right]
+\]
+
+
+Considérons maintenant une matrice $X$ carrée d'ordre $2n$. 
+De la même manière que l'on avait vectorisé les fonctions 
+d'activation dans la partie concernant les réseaux de neurones, 
+on peut vectoriser $f$ et l'appliquer à la matrice $X$. 
+On définit donc $f(X)$ comme la matrice dont les colonnes sont 
+les images des colonnes de $X$ par $f$.
+
+Le passage d'une image $X$ de dimensions paires dans le domaine 
+de Fourier se fait en appliquant la transformée une fois sur les 
+colonnes puis une fois sur les lignes. 
+La fonction \tcode{rfft} de \tcode{scipy} calcule $f$.
+\[
+Y = f(f(X)^T)^T
+\]
