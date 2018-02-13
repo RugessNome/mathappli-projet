@@ -62,6 +62,54 @@ qu'un pixel est colorié dès qu'il y aura un peu d'encre dessus, ce qui peut
 
 \section{Densités de pixels coloriés}
 
+On s'intéresse ici au niveau moyen de coloration des pixels. 
+Pour cela, on regroupe les pixels par groupes de 16 (une fenêtre 
+de 4 pixels sur 4 pixels) et on calcule pour chaque groupe la 
+valeur moyenne des pixels.
+Comme les images ont une taille de 28x28, on obtient au final 
+49 valeurs que l'on peut utiliser comme \nfw{feature}.
+
+La figure \ref{fig:zoning} montre l'effet de l'application 
+d'un tel filtre sur une image. 
+L'image finale a été agrandie à titre de comparaison mais 
+fait en réalité 49x49 pixels.
+
+\begin{figure}
+  \centering
+  \begin{subfigure}[b]{0.4\textwidth}
+    \centering
+    \includegraphics[scale=0.4]{assets/training-0}
+  \end{subfigure}%
+  ~ 
+  \begin{subfigure}[b]{0.4\textwidth}
+    \centering
+    \includegraphics[scale=0.4]{assets/zoning-training-0}
+  \end{subfigure}
+  \caption{Densité de pixels sur le chiffre 5.}
+  \label{fig:zoning}
+\end{figure}
+
+On peut généraliser ce procédé en effectuant autre chose qu'une 
+moyenne (en général un maximum) et en autorisant les fenêtres 
+d'application à se chevaucher. 
+C'est ce qui est fait dans les réseaux convolutifs qui seront 
+abordés plus loin.
+En attendant, on peut observer en figure \ref{fig:zoning-max} 
+l'effet de l'utilisation de la fonction \tcode{max} à la 
+place de \tcode{mean}. 
+Comme on peut le voir, il est plus difficile de reconnaître 
+le chiffre.
+C'est pourquoi nous utiliserons simplement la densité dans 
+nos essais.
+
+\begin{figure}
+  \centering
+  \includegraphics[scale=0.4]{assets/zoning-training-0-max}
+  \caption{Filtre \tcode{max} sur des fenêtres non recouvrantes de taille 4x4.}
+  \label{fig:zoning-max}
+\end{figure}
+
+
 
 
 \section{Nombre de croissements (\nfw{crossings})}

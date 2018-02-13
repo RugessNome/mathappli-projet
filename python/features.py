@@ -76,20 +76,24 @@ def fill_loops(inimg):
 
 # Zoning
 
-def zoning(img, pw = 4, ph = 4):
+def zoning(img, function = 'avg', pw = 4, ph = 4):
     ret = []
-    for y in range(0, 28, ph):
-        for x in range(0, 28, pw):
-            zone = 0
-            for i in range(pw):
-                for j in range(ph):
-                    zone += img[y+j][x+i]
-            zone = zone / (ph*pw)
-            ret.append(zone)
+    if function == 'avg':
+        for y in range(0, 28, ph):
+            for x in range(0, 28, pw):
+                zone = img[y:y+ph,x:x+pw]
+                ret.append(zone.mean())
+    elif function == 'max':
+        for y in range(0, 28, ph):
+            for x in range(0, 28, pw):
+                zone = img[y:y+ph,x:x+pw]
+                ret.append(zone.max())
+    else:
+        raise RuntimeError("Invalid 'function' argument for zoning")
     return ret
 
-def plot_zoning(img, pw = 4, ph = 4):
-    zones = zoning(img, pw, ph)
+def plot_zoning(img, function = 'avg', pw = 4, ph = 4):
+    zones = zoning(img, function, pw, ph)
     zoneimg = np.zeros((28,28))
     for y in range(0, 28, ph):
         for x in range(0, 28, pw):
