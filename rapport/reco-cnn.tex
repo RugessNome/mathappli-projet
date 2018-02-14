@@ -1,6 +1,174 @@
 
-\chapter{Reconnaissance basée sur les réseaux convolutionnels}
+\chapter{Reconnaissance basée sur les réseaux convolutifs}
+
+L'une des méthodes les plus efficaces pour la reconnaissance 
+d'image est basée sur des réseaux convolutifs. 
+Il s'agit de réseaux de neurones profonds où les neurones 
+d'une couche à la suivante ne sont pas forcément tous connectés, 
+notamment dans les premières couches.
+Sur ces couches, l'image d'entrée est découpée en zones que l'on 
+appelle tuile ou \nfw{patch}, qui peuvent ou non se chevaucher.
+Ces \nfw{patch} sont traités séparement par des neurones qui 
+y applique des fonctions particulières au traitement d'image
+(on parle de traitement convolutif).
+Ce n'est que dans des couches plus profondes que les résultats 
+sont "agglomérés" pour obtenir une prédiction.
+
+On décompose le problème en plusieurs étapes:
+\begin{enumerate}
+  \item création du modèle de réseau convolutifs, on définit le nombre de 
+  couches et les caractéristiques de chaque couche;
+  \item entraînement, on utilise les données d'entraînement pour modifier les 
+  coefficients du réseau;
+  \item évaluation de l'\nfw{accuracy} du réseau, on utilise le jeu de test 
+  pour évaluer les performances de notre réseau;
+  \item prédiction, on utilise notre réseau entraîné pour faire des prédictions.
+\end{enumerate}
+
+En plus de cela, il est possible d'évaluer la qualité de notre modèle (défini 
+à l'étape 1) par validation croissée. 
+On découpe le jeu d'entraînement en $k$ groupes et on utilise $k-1$ groupes 
+pour effectuer l'entraînement et le dernier groupe pour évaluer le réseau (taux 
+de reconnaissance). 
+On répète l'opération en utilisant chacun des groupes une fois pour l'évaluation.
+En effectuant plusieurs fois l'opération de découpage en $k$ groupes, on 
+est en mesure d'obtenir une valeur moyenne pour la précision ainsi qu'une variance. 
 
 
 
+\section{Construction du réseau}
 
+Nous avons utiliser la bibliothèque \Python \tcode{keras} pour construire 
+le réseau convolutif. 
+Le code correspondant à la création du modèle est très simple avec cette 
+bibliothèque.
+
+\begin{codeblock}
+def build_classifier():
+    classifier = Sequential()
+    classifier.add(Conv2D(32, (3, 3), input_shape=(28, 28, 1), activation='relu'))
+    classifier.add(MaxPooling2D(pool_size=(2, 2)))
+    classifier.add(Conv2D(32, (3, 3), activation = 'relu'))
+    classifier.add(MaxPooling2D(pool_size=(2, 2)))
+    classifier.add(Flatten())
+    classifier.add(Dropout(0.1)) 
+    classifier.add(Dense(units = 128, activation='relu'))
+    classifier.add(Dropout(0.1)) # Overfitting reduction - Dropout
+    classifier.add(Dense(units = 10, activation='softmax'))
+    classifier.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
+    return classifier
+\end{codeblock}
+
+Nous allons faire une description ligne à ligne du code précédent.
+
+\begin{codeblock}
+classifier = Sequential()
+\end{codeblock}
+
+Cette ligne indique que l'on souhaite utiliser un modèle séquentiel, 
+c'est à dire un modèle où les couches du réseau sont parcourues linéairement, 
+les unes après les autres.
+
+\begin{codeblock}
+classifier.add(Conv2D(32, (3, 3), input_shape=(28, 28, 1), activation='relu'))
+\end{codeblock}
+
+On ajoute à notre réseau une première couche dite de convolution. 
+Comme il s'agit de la première couche, on doit préciser la dimension de 
+l'\nfw{input}. 
+Ici, nos images seront des tableaux de $28 \times 28$ pixels.  
+On précise également une fonction d'activation qui est ici \tcode{relu}.
+Les deux premiers arguments sont les plus intéressants. 
+On indique que l'on souhaite applique $32$ filtres à des \tcode{patch} de taille 
+$3 \times 3$. 
+Comme l'on ne précise rien d'autre, les \tcode{patch} se chevauchent avec un décalage 
+de 1. 
+On obtient donc en sortie de cette couche une image de taille $26 \times 26$ pour 
+chacun des 32 filtres soit $26 \times 26 \times 32$ valeurs.
+
+\begin{codeblock}
+classifier.add(MaxPooling2D(pool_size=(2, 2)))
+\end{codeblock}
+
+On applique dans cette couche une fonction à des \tcode{patch} de taille $2 \times 2$ 
+qui ne se chevauchent pas. 
+Comme le suggère le nom, la fonction appliquée ici est \tcode{max}. 
+Nos images de taille $26 \times 26$ voient donc leur taille réduite de moitié. 
+On garde cependant une image pour chaque filtre de la première convolution 
+soit un espace de sortie de taille $13 \times 13 \times 32$.
+
+Notons que l'on a plus besoin de préciser la taille de l'entrée dans cette 
+couche (elle est déduite automatiquement de la couche précédente).
+
+\begin{codeblock}
+classifier.add(Conv2D(32, (3, 3), activation = 'relu'))
+\end{codeblock}
+
+On réapplique 32 filtres en utilisant des \nfw{patch} de taille 
+$3 \times 3$. 
+Les images de sortie auront donc une taille de $11 \times 11$.
+Attention cependant, les entrées sont considérées comme des images 
+de taille $13 \times 13$ et ayant $32$ composantes ; 
+on obtient donc pas une sortie de taille $11 \times 11 \times (32 \times 32)$ 
+mais simplement $11 \times 11 \times 32$. [TODO: ce point est à expliciter...]
+
+
+\begin{codeblock}
+classifier.add(MaxPooling2D(pool_size=(2, 2)))
+\end{codeblock}
+
+On refait un \tcode{MaxPooling2D} ce qui réduit la taille de la sortie 
+à $5 \times 5 \times 32$. 
+[TODO: ce point est à expliciter, la taille de l'entrée est 11 et on a 5 en sortie, 
+une partie de l'image est-elle jetée ?]
+
+
+\begin{codeblock}
+classifier.add(Flatten())
+\end{codeblock}
+
+On ajoute une couche qui aplatit la sortie de la couche précédente.
+On obtient donc un vecteur de taille $800$.
+
+
+\begin{codeblock}
+classifier.add(Dropout(0.1)) 
+\end{codeblock}
+
+Cette couche sert pendant l'entraînement à mettre temporairement à zéro 
+une partie des inputs pour limiter le sur-apprentissage.
+
+\begin{codeblock}
+classifier.add(Dense(units = 128, activation='relu'))
+\end{codeblock}
+
+On ajoute une couche de neurone \nfw{fully-connected}. 
+Cela correspond à une couche d'un réseau de neurone telle que présentée 
+dans la première partie. 
+On précise la dimension de l'espace de sortie, $128$; et la fonction 
+d'activation, \tcode{relu}.
+
+\begin{codeblock}
+classifier.add(Dropout(0.1)) 
+\end{codeblock}
+
+Une autre couche de \nfw{dropout} !
+
+
+\begin{codeblock}
+classifier.add(Dense(units = 10, activation='softmax'))
+\end{codeblock}
+
+La dernière couche du réseau, ayant 10 sorties correspondant à nos 10 classes. 
+La fonction d'activation utilisée ici est \tcode{softmax}. 
+Cette fonction permet de transformer un vecteur de nombre positifs en 
+un vecteur définissant une probabilité (les composantes peuvent être 
+vues comme la probabilité d'appartenance à la classe associée).
+    
+	
+\begin{codeblock}
+classifier.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
+\end{codeblock}
+
+On compile notre modèle, on pourra ensuite entraîner notre réseau. 
+[TODO: section à compléter]

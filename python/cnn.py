@@ -70,6 +70,47 @@ def build_classifier():
     classifier.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
     return classifier
 
+def step_by_step_build():
+    classifier = Sequential()
+    print("Adding a convolution layer")
+    classifier.add(Conv2D(32, (3, 3), input_shape=(28, 28, 1), activation='relu'))
+    print("Input shape is :")
+    print(classifier.input_shape)
+    print("Output shape is :")
+    print(classifier.output_shape)
+    print("Adding a MaxPooling layer")
+    classifier.add(MaxPooling2D(pool_size=(2, 2)))
+    print(classifier.output_shape)
+    print("Adding a second Conv2D layer")
+    classifier.add(Conv2D(32, (3, 3), activation = 'relu'))
+    print(classifier.output_shape)
+    print("Adding a second MaxPooling2D layer")
+    classifier.add(MaxPooling2D(pool_size=(2, 2)))
+    print(classifier.output_shape)
+    print("Adding a Flatten layer")
+    classifier.add(Flatten())
+    print(classifier.output_shape)
+    print("Adding a Dropout layer")
+    classifier.add(Dropout(0.1))
+    print(classifier.output_shape)
+    print("Adding a Dense layer")
+    classifier.add(Dense(units = 128, activation='relu'))
+    print(classifier.output_shape)
+    print("Adding a Dropout layer")
+    classifier.add(Dropout(0.1))
+    print(classifier.output_shape)
+    print("Adding a Dense layer")
+    classifier.add(Dense(units = 10, activation='softmax'))
+    print(classifier.output_shape)
+    try:
+        from keras.utils import plot_model
+        plot_model(classifier, to_file='model.png')
+        print("Model plotted in model.png")
+    except:
+        pass
+    classifier.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
+    return classifier
+
 def save_classifier(classifier, name='cnn'):
     import os
     import os.path
