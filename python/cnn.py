@@ -28,23 +28,44 @@ import matplotlib.pyplot as plt
 
 # DATA PREPROCESSING :
 
-# Loading dataset mnist
-X_train, y_train = mnist.load(mnist.MNIST_TRAINING_DATA, mnist.MNIST_FORMAT_PAIR_OF_LIST, shape=(28,28,1))
-X_test, y_test = mnist.load(mnist.MNIST_TEST_DATA, mnist.MNIST_FORMAT_PAIR_OF_LIST, shape=(28,28,1))
 
-# Normalizing inputs 
-X_train = X_train / 255
-X_test = X_test / 255
+def fetch_data():
+    # Loading dataset mnist
+    X_train, y_train = mnist.load('train', mnist.MNIST_FORMAT_PAIR_OF_LIST, shape=(28,28,1))
+    X_test, y_test = mnist.load('test', mnist.MNIST_FORMAT_PAIR_OF_LIST, shape=(28,28,1))
+    
+    # Normalizing inputs 
+    X_train = X_train / 255
+    X_test = X_test / 255
 
-# Reducing the size of the training set for faster results (optional)
-#upperbound=10000
-#X_train = X_train[0:upperbound]
-#y_train = y_train[0:upperbound]
+    # Reducing the size of the training set for faster results (optional)
+    #upperbound=10000
+    #X_train = X_train[0:upperbound]
+    #y_train = y_train[0:upperbound]
+    
+    # Categorical encoding of outputs
+    y_train_vect = to_categorical(y_train)
+    y_test_vect = to_categorical(y_test)
 
-# Categorical encoding of outputs
-y_train_vect = to_categorical(y_train)
-y_test_vect = to_categorical(y_test)
+    return X_train, y_train_vect, X_test, y_test_vect
 
+
+def augment_data(images, labels, batch_size, batch_count, rotation = 0, hshift = 0.25, vshift = 0.25, zoom = 0.25):
+    # Data augmentation
+    assert(batch_size <= len(images))
+    assert(len(images) / batch_size == int(len(images) / batch_size))
+    from keras.preprocessing.image import ImageDataGenerator
+    datagen = ImageDataGenerator(rotation_range=rotation, width_shift_range=hshift, height_shift_range=vshift, zoom_range=zoom, data_format='channels_last')
+    datagen.fit(images)
+    flow = datagen.flow(images, labels, batch_size=batch_size)
+    x_batch, y_batch = flow.__next__()
+    for i in range(batch_count-1):
+        x_batch_iter, y_batch_iter = flow.__next__()
+        x_batch = np.concatenate((x_batch, x_batch_iter))
+        y_batch = np.concatenate((y_batch, y_batch_iter))
+    assert(len(x_batch) == batch_count * batch_size)
+    assert(len(y_batch) == batch_count * batch_size)
+    return x_batch, y_batch
 
 # CNN IMPLEMENTATION :
 
@@ -125,38 +146,37 @@ def load_classifier(name='cnn'):
     return classifier
 
 # Fits the model
-def fit_model(epochs = 10, batch_size = 32):
-    global classifier
+def fit_model(X_train, y_train, epochs = 10, batch_size = 32):
     classifier = build_classifier()
     from sklearn.model_selection import train_test_split
-    X, X_validation, y, y_validation = train_test_split(X_train, y_train_vect, test_size=10000, random_state=42)
+    X, X_validation, y, y_validation = train_test_split(X_train, y_train, test_size=0.2, random_state=42)
     classifier.fit(X, y, validation_data = (X_validation, y_validation), epochs = epochs, batch_size=batch_size)
+    return classifier
     
 # Evaluates the model : variance and mean of accuracy (takes a long time)
-def eval_model(nb_epochs = 10, batch_size = 32, cv = 10):
-    global accuracies
+def eval_model(X_train, y_train, nb_epochs = 10, batch_size = 32, cv = 10):
     classifier = KerasClassifier(build_fn = build_classifier, batch_size = batch_size, nb_epoch = nb_epochs)
-    accuracies = cross_val_score(estimator = classifier, X = X_train, y = y_train_vect, cv = cv)
+    accuracies = cross_val_score(estimator = classifier, X = X_train, y = y_train, cv = cv)
     print("Acurracy mean :", accuracies.mean())
     print("Accuracy variance :", var_accuracy = accuracies.std())
+    return accuracies
 
 
 # PREDICTIONS AND LOSS  :
 
 def ypred(pred):
-        y=[]
-        for i in range(0, len(pred)):
-            pred_i = pred[i,].tolist()
-            index = pred_i.index(max(pred_i))
-            y.append(index)
-        y = np.array(y)
-        return y  
+    y=[]
+    for i in range(0, len(pred)):
+        pred_i = pred[i,].tolist()
+        index = pred_i.index(max(pred_i))
+        y.append(index)
+    y = np.array(y)
+    return y  
 
 # Determines loss, accuracy and confusion matrix
-def predict(classifier):
+def predict(classifier, X_test, y_test):
     # Evaluation of the loss (depends on the metrics)
-    global loss, cm
-    loss = classifier.evaluate(X_test, y_test_vect, batch_size=32)
+    loss = classifier.evaluate(X_test, y_test, batch_size=32)
     # Evaluation of the pourcentage of failure 
     print("\n \n Success : ",loss[1]*100,"%")
     # Confusion Matrix
@@ -164,18 +184,20 @@ def predict(classifier):
     # of observations known to be in group i but predicted to be in group j.
     y_predict_vect = classifier.predict(X_test)
     y_predict = ypred(y_predict_vect)
-    cm = confusion_matrix(y_test,y_predict)
+    cm = confusion_matrix(ypred(y_test),y_predict)
+    return loss, cm
     
 # Visualize confusion matrix as a heatmap
-def cm_visualisation():
+def cm_visualisation(cm):
     ax = sb.heatmap(cm, cmap="BuPu")
     ax.invert_yaxis()
     plt.yticks(rotation=0); 
+    plt.show()
     
 # Returns the 3 first results with their probabilities for the prediction of image
 # image must be sized (28,28,1)
 # use np.expand_dims() if you want to increase dimensions
-def single_prediction(image,printResult=True):
+def single_prediction(classifier, image,printResult=True):
     test = np.expand_dims(image, axis = 0)
     l=classifier.predict(test)
     l=l[0].tolist()
@@ -231,3 +253,48 @@ def best_parameters():
     grid_search = grid_search.fit(X_train, y_train)
     best_parameters = grid_search.best_params_
     best_accuracy = grid_search.best_score_
+
+
+def example1():
+    # This is supposed to show that the CNN has difficulties generalizing
+    X_train, y_train, X_test, y_test = fetch_data()
+    X_test, y_test = augment_data(X_test, y_test, 10000, 2)
+    cla = None
+    try:
+        cla = load_classifier('cnn_example1')
+    except:
+        cla = fit_model(X_train, y_train, epochs=2)
+        save_classifier(cla, 'cnn_example1')
+    loss, cm = predict(cla, X_test, y_test)
+    print(loss)
+    cm_visualisation(cm)
+
+def example2():
+    # This shows how the CNN performs when trained with augmented data 
+    # and tested with normal data.
+    X_train, y_train, X_test, y_test = fetch_data()
+    X_train, y_train = augment_data(X_train, y_train, batch_size=30000, batch_count=3)
+    cla = None
+    try:
+        cla = load_classifier('cnn_example2')
+    except:
+        cla = fit_model(X_train, y_train, epochs=3)
+        save_classifier(cla, 'cnn_example2')
+    loss, cm = predict(cla, X_test, y_test)
+    print(loss)
+    cm_visualisation(cm)
+
+def example3():
+    # Last example : both the training and testing data are augmented
+    X_train, y_train, X_test, y_test = fetch_data()
+    X_train, y_train = augment_data(X_train, y_train, batch_size=30000, batch_count=3)
+    X_test, y_test = augment_data(X_test, y_test, batch_size=10000, batch_count=4)
+    cla = None
+    try:
+        cla = load_classifier('cnn_example3')
+    except:
+        cla = fit_model(X_train, y_train, epochs=3)
+        save_classifier(cla, 'cnn_example3')
+    loss, cm = predict(cla, X_test, y_test)
+    print(loss)
+    cm_visualisation(cm)

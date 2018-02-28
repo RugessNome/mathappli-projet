@@ -8,8 +8,10 @@ from PyQt5.QtGui import QPixmap
 
 from drawwidget import DrawWidget
 from reco import Recognizer
-import cnn
 import numpy as np
+
+import cnn
+classifier = cnn.load_classifier('cnn_example3')
 
 draw = None
 recognizer = None
@@ -21,7 +23,7 @@ def on_button_clicked():
     img = draw.getNumpyImage()
     img = img/255
     img = np.expand_dims(img, axis = 2)
-    result = cnn.single_prediction(img)[0][0]
+    result = cnn.single_prediction(classifier, img)[0][0]
     #result = recognizer.predict(img)
     #import mnist
     #mnist.show(img)
@@ -41,7 +43,6 @@ def on_clear_button_clicked():
     draw.clear()
 
 if __name__ == '__main__':
-    cnn.fit_model(epochs = 10, batch_size = 32)
     #recognizer = Recognizer(['loops', 'zones', 'fourier_image', 'fourier_contour'])
     app = QApplication(sys.argv)
     widget = QWidget()
