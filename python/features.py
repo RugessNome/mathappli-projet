@@ -228,6 +228,25 @@ im2freq = lambda data: fp.rfft(fp.rfft(data, axis=0), axis=1)
 freq2im = lambda f: fp.irfft(fp.irfft(f, axis=1), axis=0)
 
 
+def rfft_vect(x):
+    n = len(x)
+    y = [None] * n
+    for j in range(n):
+        yj = 0
+        for k in range(n):
+            yj = yj + x[k] * np.exp(-1j*j*2*k*np.pi/n)
+        y[j] = yj
+    ret = [np.real(y[0])]
+    for i in range(1, int(n/2)):
+        ret.append(np.real(y[i]))
+        ret.append(np.imag(y[i]))
+    ret.append(np.real(y[int(n/2)]))
+    return np.array(ret)
+
+def rfft_matrix(x):
+    return np.array([rfft_vect(col) for col in x.T]).T
+
+
 def fft_test(index = 62, harmo = 8):
     img, label = training_data[index]
     
