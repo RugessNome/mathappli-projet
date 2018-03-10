@@ -612,3 +612,75 @@ Ainsi,
 \frac{\partial C}{\partial w_{jk}^{l}} = a_{k}^{l-1} \delta_{j}^{l}
 \]
 \end{proof}
+
+
+
+\section{Reconnaissance avec un réseau de neurone}
+
+Dans cette partie, on se propose d'utiliser ce que l'on a vu 
+précédement pour construire un réseau de neurones permettant 
+de répondre à notre problème de classification.
+
+
+\subsection{Construction du réseau de neurones}
+
+On se propose de construire un réseau de neurones ayant une 
+seule couche cachée contenant $p$ neurones. 
+Les couches d'entrées et de sorties contiennent respectivement 
+$28 \times 28 = 784$ et 10 neurones.
+
+Chaque neurone de la couche de sortie correspond à une classe 
+(de 0 à 9) et on dira que le réseau classe une entrée dans la 
+classe $C_i$ si la sortie $i$ est la plus élevée.
+
+On rappelle que puisqu'on utilise comme fonction d'activation 
+la sigmoïde, les sorties sont toutes positives.
+
+
+\subsection{Apprentissage}
+
+Les images du jeu d'entraînement de \textsc{MNIST} sont des 
+tableaux de 28 par 28 contenant des entiers de 0 à 255.
+On commence par redimensionner le tableau en un vecteur 
+de taille 784 que l'on divise ensuite par 255 pour obtenir 
+des composantes entre 0 et 1. 
+Cela n'est pas nécessaire dans l'absolue mais donne de 
+meilleurs résultats en pratique.
+En effet, la sigmoïde faisant intervenir une exponentielle, 
+on aura du mal à calculer numériquement $e^{-255}$.
+
+Pour les sorties, on converti les différentes étiquettes 
+en des vecteurs de taille 10 dont toutes les composantes 
+sont nulles sauf la composantes correspondant à la classe 
+qui vaut 1.
+
+On initialise les poids et biais de notre réseau par des 
+tirages aléatoires suivant une $\mathcal{N}(0, 1)$.
+
+On découpe la phase d'apprentissage en \nfw{epochs}. 
+Comme nous l'avons dit précédemment, on ne cherchera pas 
+à calculer la valeur exacte de la dérivée du coût 
+pour changer nos coefficients mais seulement une 
+approximation de cette dérivée.
+On va donc découper de manière aléatoire notre jeu 
+d'entraînement en \nfw{mini-batch} (i.e. en sous-échantillon) 
+dont l'union fait le jeu complet.
+Il s'agit donc en quelque sorte d'une partition du 
+jeu de départ créée aléatoirement.
+On effectue la descente de gradient avec ces 
+\nfw{mini-batchs}. 
+Lorsque l'on a utilisé tous les \nfw{mini-batchs}, 
+et donc toutes les données, on dit que l'on a 
+effectuer une \nfw{epoch}.
+On peut alors en commencer une autre en effectuant un 
+nouveau découpage aléatoire du jeu d'entraînement.
+
+
+\subsection{Résultats}
+
+
+En prenant $p = 30$ neurones sur la couche cachée, et 
+en prenant des \nfw{mini-batchs} de taille 10, 
+on arrive en une trentaine d'\nfw{epochs} et avec 
+un taux d'apprentissage $\eta = 3,0$ à un taux de 
+reconnaissance d'environ 95\% sur le jeu de test.
