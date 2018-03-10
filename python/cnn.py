@@ -299,3 +299,29 @@ def example3():
     loss, cm = predict(cla, X_test, y_test)
     print(loss)
     cm_visualisation(cm)
+
+
+class CNNClassifier(object):
+    def __init__(self, epochs=10, batch_size=32, **kwargs):
+        super().__init__(**kwargs)
+        self.cnn = build_classifier()
+        self.epochs = epochs
+        self.batch_size = batch_size
+
+    def fit(self, X, y):
+        Y_categorical = to_categorical(Y)
+        self.cnn.fit(training_data, epochs=self.epochs, batch_size=self.batch_size)
+
+    def predict(self, X):
+        Y = self.cnn.predict(X)
+        return [np.argmax(y) for y in Y]
+
+    def predict_proba(self, X):
+        return self.cnn.predict(X)
+
+    def load(self, name='ann'):
+        self.cnn = load_classifier(name)
+
+    def save(self, name='cnn_classifier'):
+        save_classifier(cla, name)
+

@@ -1,33 +1,55 @@
 
 import sys
 
-from PyQt5.QtWidgets import QApplication, QWidget, QHBoxLayout, QVBoxLayout, QPushButton, QLabel
+from PyQt5.QtWidgets import QApplication, QWidget, QHBoxLayout, QVBoxLayout, QPushButton, QLabel, QComboBox
 from PyQt5.QtWidgets import QMessageBox
 
 from PyQt5.QtGui import QPixmap
 
 from drawwidget import DrawWidget
-from reco import Recognizer
 import numpy as np
 
-import cnn
-classifier = cnn.load_classifier('cnn_example3')
-
 draw = None
-recognizer = None
+
+classifiers = []
+
+import cnn
+cnn_cla = cnn.CNNClassifier()
+cnn_cla.load('cnn_example3')
+classifiers.append(('cnn', cnn_cla))
+
+import reco
+ann_cla = reco.NeuralNetworkClassifier()
+ann_cla.load('ann')
+classifiers.append(('neural network', ann_cla))
+
+rf_cla = reco.FeatureBasedClassifier('rf_example1')
+classifiers.append(('random forest', rf_cla))
+
+current_classifier_combobox = None
 
 def on_button_clicked():
     img = draw.getImage()
     #pix = QPixmap.fromImage(img)
     #pix.save('test.png')
     img = draw.getNumpyImage()
-    img = img/255
-    img = np.expand_dims(img, axis = 2)
-    result = cnn.single_prediction(classifier, img)[0][0]
-    #result = recognizer.predict(img)
-    #import mnist
-    #mnist.show(img)
-    QMessageBox.information(draw, 'Prediction', str(result), QMessageBox.Ok, QMessageBox.Ok)
+    cla_name, cla = classifiers[current_classifier_combobox.currentIndex()]
+    if type(cla) is cnn.CNNClassifier or type(cla) is reco.NeuralNetworkClassifier:
+        img = img/255
+    if type(cla) is cnn.CNNClassifier:
+        img = np.expand_dims(img, axis = 2)
+        img = np.expand_dims(img, axis = 0)
+    elif type(cla) is reco.NeuralNetworkClassifier:
+        img = img.reshape((28*28))
+    elif type(cla) is reco.FeatureBasedClassifier:
+        pass
+    probas = cla.predict_proba([img])[0]
+    result = ''
+    for i in range(3):
+        index = np.argmax(probas)
+        result += '{0} : ({1:.4f} %)\n'.format(index, probas[index]) 
+        probas[index] = 0
+    QMessageBox.information(draw, 'Prediction ' + cla_name, result, QMessageBox.Ok, QMessageBox.Ok)
 
 def on_show_button_clicked():
     img = draw.getNumpyImage()
@@ -43,7 +65,6 @@ def on_clear_button_clicked():
     draw.clear()
 
 if __name__ == '__main__':
-    #recognizer = Recognizer(['loops', 'zones', 'fourier_image', 'fourier_contour'])
     app = QApplication(sys.argv)
     widget = QWidget()
     layout = QVBoxLayout()
@@ -58,6 +79,10 @@ if __name__ == '__main__':
     button = QPushButton('Contour')
     layout.addWidget(button)
     button.clicked.connect(on_contour_button_clicked)
+    current_classifier_combobox = QComboBox()
+    for (name, _) in classifiers:
+        current_classifier_combobox.addItem(name)
+    layout.addWidget(current_classifier_combobox)
     button = QPushButton('Clear')
     layout.addWidget(button)
     button.clicked.connect(on_clear_button_clicked)
