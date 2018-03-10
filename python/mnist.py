@@ -83,7 +83,7 @@ def load(what, format = MNIST_FORMAT_LIST_OF_PAIR, shape = None, path = None):
         try:
             import keras.datasets.mnist
             (X_train, y_train), (X_test, y_test) = keras.datasets.mnist.load_data()
-            images, labels = (X_train, y_train) if what == MNIST_TRAINING_DATA else (X_test, y_test)
+            images, labels = (X_train, y_train) if dataset_by_name(what) == MNIST_TRAINING_DATA else (X_test, y_test)
         except ModuleNotFoundError:
             raise RuntimeError('Could not load MNIST dataset')
 

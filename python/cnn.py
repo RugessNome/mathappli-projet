@@ -241,6 +241,7 @@ def build_classifier_tuned(optimizer):
 
 # Determines the best parameters defined in the dictionnary parameters (takes a while...)
 def best_parameters():
+    X_train, y_train, X_test, y_test = fetch_data()
     global best_parameters, best_accuracy
     classifier = KerasClassifier(build_fn = build_classifier_tuned)
     parameters = {'batch_size' : [25,32],
