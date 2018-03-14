@@ -152,7 +152,9 @@ qui ne se chevauchent pas.
 Le Pooling est une méthode permettant de réduire la taille d'une image tout en préservant 
 les informations essentielles. Cette opération permet aussi de réduire le 
 sur-apprentissage en généralisant l'information localement.
-Comme le suggère le nom, la fonction appliquée ici est \tcode{max}. 
+Comme le suggère le nom, la fonction appliquée ici est \tcode{max}. C'est la méthode
+de pooling la plus courante mais il existe de même des méthodes de pooling utilisant 
+les fonctions \tcode{average} ou \tcode{median} par exemple. 
 Nos images de taille $26 \times 26$ voient donc leur taille réduite de moitié. 
 On garde cependant une image pour chaque filtre de la première convolution 
 soit un espace de sortie de taille $13 \times 13 \times 32$.
