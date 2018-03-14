@@ -309,7 +309,7 @@ class CNNClassifier(object):
         self.batch_size = batch_size
 
     def fit(self, X, y):
-        Y_categorical = to_categorical(Y)
+        Y_categorical = to_categorical(y)
         self.cnn.fit(training_data, epochs=self.epochs, batch_size=self.batch_size)
 
     def predict(self, X):
