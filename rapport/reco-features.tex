@@ -11,16 +11,15 @@ Il s'agit d'extraire des données brutes (i.e.\/ les pixels de l'image) des
 caractéristiques (ou \nfw{features} en anglais) qui permettent de décrire 
 l'image dans un format plus adapté pour une machine.
 
-\newcommand{\features}{\nfw{features}}
-Ces \features peuvent être regroupés en deux catégories : 
+Ces features peuvent être regroupés en deux catégories : 
 \begin{enumerate}
-  \item les \features statistiques, qui vont s'intéresser à des densité de pixels, 
+  \item les features statistiques, qui vont s'intéresser à des densité de pixels, 
   des extremums et autres transformées mathématiques;
-  \item les \features structurelles, qui s’intéressent aux traits (strokes), aux courbes,
+  \item les features structurelles, qui s’intéressent aux traits (strokes), aux courbes,
   aux nombres de bifurcations, etc…, ces dernières sont plus intuitives pour l’humain.
 \end{enumerate}
 
-Nous allons dans ce chapitre présenter quelques \features qui peuvent être 
+Nous allons dans ce chapitre présenter quelques features qui peuvent être 
 utilisées dans le cadre de la reconnaissance de caractères. Puis nous les utiliserons 
 comme entrées de différents algorithmes de \nfw{machine learning}.
 
@@ -53,7 +52,7 @@ def binarize(img, treshold = 200):
 \end{codeblock}
 
 Bien évidemment, le choix du seuil peut avoir un impact sur le calcul des 
-\features si l'on choisit un seuil très élevé, beaucoup de pixels seront 
+features si l'on choisit un seuil très élevé, beaucoup de pixels seront 
 considérés comme vide. A contrario, si le seuil est très faible, on considéra 
 qu'un pixel est colorié dès qu'il y aura un peu d'encre dessus, ce qui peut 
 également poser des problèmes.
@@ -67,7 +66,7 @@ Pour cela, on regroupe les pixels par groupes de 16 (une fenêtre
 de 4 pixels sur 4 pixels) et on calcule pour chaque groupe la 
 valeur moyenne des pixels.
 Comme les images ont une taille de 28x28, on obtient au final 
-49 valeurs que l'on peut utiliser comme \nfw{feature}.
+49 valeurs que l'on peut utiliser comme feature.
 
 La figure \ref{fig:zoning} montre l'effet de l'application 
 d'un tel filtre sur une image. 
@@ -334,8 +333,7 @@ b_n = \frac{T}{2 n^2 \pi^2} \sum_{p = 1}^{K} \frac{\Delta x_p}{\Delta t_p} \left
 On peut appliquer le même raisonnement pour $y(t)$ et on obtiendra des 
 coefficients $C_0$, $c_n$ et $d_n$ vérifiant les mêmes équations.
 
-On pourra utiliser les coefficients $a_n, b_n, c_n, d_n$ comme 
-\nfw{features}.
+On pourra utiliser les coefficients $a_n, b_n, c_n, d_n$ comme features.
 
 La figure \ref{fig:contour-reconstruction} montre la reconstruction 
 du contour de l'exemple précédent en ajoutant à chaque étape des 
@@ -349,7 +347,7 @@ composantes (on commence à l'ordre 1 pour finir à l'ordre 12).
 \end{figure}
 
 Cette figure permet d'estimer un intervalle d'ordres que l'on pourrait 
-utiliser comme \nfw{feature}.
+utiliser comme feature.
 
 
 
@@ -473,3 +471,127 @@ Y = f(f(X)^T)^T
 Une implémentation de cette fonction est donnée en \Python dans le 
 fichier \tcode{features.py} sous le nom \tcode{rfft_vect}; cette 
 fonction n'est pas utilisée en pratique pour des raisons de performance.
+
+
+
+\section{Reconnaissance avec des techniques de machine learning classiques}
+
+On peut utiliser les features proposées précédemment soit de manière isolée 
+soit en groupe pour effectuer de la reconnaissance sur le jeu de test.
+Comme le jeu de données est de grande taille (60'000 images), le temps de 
+calcul des features est assez important. 
+Nous avons donc mis en place un système de cache qui fait que les features ne 
+sont calculées qu'une seule fois.
+
+Une fois le calcul des features effectué, on procède de la manière suivante:
+\begin{enumerate}
+  \item On sélectionne un sous-ensemble des features avec lequel on va entraîner le classifieur;
+  \item On entraîne le classifieur avec les données d'entraînement;
+  \item On évalue le classifieur sur le jeu de test.
+\end{enumerate}
+
+Les features utilisés seront les suivantes:
+\begin{itemize}
+  \item \tcode{loops}, le nombre de boucles dans l'image;
+  \item \tcode{moments}, les moments d'ordre $p+q \leq 4$ (9 valeurs);
+  \item \tcode{zones}, les moyennes des patchs de taille $4 \times 4$ (49 valeurs);
+  \item \tcode{fourier_contour}, les coefficients de la décomposition en série de Fourier du contour d'ordre $\leq 8$ (32 valeurs);
+  \item \tcode{fourier_image}, les coefficients de l'image issue de le transformation \tcode{rfft} présentée précédemment de coordonnées $\leq 4$ (25 valeurs).
+\end{itemize}
+
+
+Dans le cadre de ce projet, nous avons testé différents classifieurs proposés 
+par la bibliothèque \tcode{scikit-learn}:
+\begin{itemize}
+  \item \tcode{KNeighborsClassifier}, un classifieur utilisant l'algorithme des $k$ plus proches voisant;
+  \item \tcode{SGDClassifier}, méthode de la descente de gradient stochastique;
+  \item \tcode{GradientBoostingClassifier}, méthode du \emph{gradient boosting};
+  \item \tcode{RandomForestClassifier}, une forêt aléatoire.
+\end{itemize}
+
+Chacun de ces classifieurs doit être paramétré (bien qu'il y ait des valeurs par défaut pour les 
+paramètres) ce qui rend le travail un peu plus compliqué.
+De plus, il convient de bien choisir ses features car, pour certains algorithmes, mélanger 
+des features de natures différentes peut avoir des effets néfastes.
+
+Par exemple, l'algorithme des $k$ plus proches voisins de la bibliothèque est optimisé 
+dans le cas d'une norme euclidienne (ou plus généralement d'une norme de Minkowski). 
+Ainsi, si l'on donne en entrée à l'algorithme des features ayant des ordres de grandeur 
+différent, ce sont les variables ayant la plus grande variance que l'algorithme aura 
+tendance à privilégier (et pas forcément les plus pertinentes).
+Ce problème peut être atténué en normalisant les données d'entrées (ce qui n'est pas 
+toujours pertinent).
+
+Nous commençons d'abord par tester les différents classifieurs avec les 
+paramètres par défaut pour voir lesquels sont les plus prometteurs.
+Cela correspond par exemple à 10 estimateurs pour les forêts aléatoires
+et à 5 voisins pour les $k$ plus proches voisins.
+Le tableau suivant montre les résultats obtenus (pourcentage d'images bien classés dans le 
+jeu de test) en fonction des features utilisés et d'une éventuelle renormalisation ($\sigma = 1$).
+Certains algorithmes étant en partie aléatoire, les résultats peuvent varier 
+légèrement d'un essai à l'autre.
+
+\begin{table}[h]
+\centering
+\begin{tabular}{cccccc}
+ \hline
+ Features                & $\sigma=1$    & KNN    & SGD   & GB    & RF \\
+ \hline
+ \tcode{loops}           &  \tcode{True} &  20,66 & 14,86 & 23,13 & 23,13 \\
+ \tcode{moments}         &  \tcode{True} &  74.77 & 56.5  & 75.27 & 75.79 \\
+ \tcode{zones}           &  \tcode{True} &  94.39 & 87.71  & 93.62 & 93.45 \\
+ \tcode{fourier_contour} &  \tcode{True} &  93.61 & 53.18 & 92.05 & 93.72 \\
+ \tcode{fourier_image}   &  \tcode{True} &  93.66 & 85.67 & 91.66 & 90.12  \\
+\end{tabular}
+\caption{Classification à l'aide d'une seule feature.}
+\label{table:machine-learning-1}
+\end{table}
+
+Comme on peut le voir, on peut déjà arriver à des résultats satisfaisant en choisissant
+bien une features et un classifieur.
+
+On peut alors avoir envie de tester plusieurs stratégies pour améliorer les résultats:
+\begin{enumerate}
+  \item garder le feature qui semble la plus prometteuse, et améliorer le paramétrage des classifieurs;
+  \item ne pas toucher au paramétrage des classifieurs, mais considérer plusieurs features;
+  \item faire une combinaison des deux points précédents.
+\end{enumerate}
+
+
+\begin{table}[h]
+\centering
+\begin{tabular}{ccccccc}
+ \hline
+ Feature A               & Feature B               & $\sigma=1$    & KNN    & SGD   & GB    & RF \\
+ \hline  
+ \tcode{loops}           & \tcode{moments}         &  \tcode{True} & 78.98 & ? & ? & 79.74 \\
+ \tcode{loops}           & \tcode{moments}         & \tcode{False} & 69.41 & ? & ? & 79.91 \\
+ \tcode{loops}           & \tcode{zones}           &  \tcode{True} & 95.28 & ? & ? & 93.76 \\
+ \tcode{loops}           & \tcode{zones}           & \tcode{False} & 95.42 & ? & ? & 94.09 \\
+ \tcode{zones}           & \tcode{fourier_image}   &  \tcode{True} & 94.92 & ? & ? & 93.4 \\
+ \tcode{zones}           & \tcode{fourier_image}   & \tcode{False} & 95.43 & ? & ? & 93.61 \\
+\end{tabular}
+\caption{Classification avec deux features.}
+\label{table:machine-learning-2}
+\end{table}
+
+L'agrégation des deux features permet d'obtenir des résultats légèrement meilleurs. 
+Cela est d'autant plus marqué lorsque les features ne permettent pas séparément d'obtenir 
+de bons résultats.
+La deuxième ligne du tableau permet de voir l'effet que peut avoir la non-renormalisation des 
+entrées sur le $k$ plus proches voisins.
+Ce dernier n'est cependant pas systématique comme on peut le voir deux lignes en dessous.
+Sans surprise, le RandomForest est beaucoup moins affecté par l'absence de renormalisation.
+
+
+\begin{table}[h]
+\centering
+\begin{tabular}{ccccccc}
+ \hline
+ Feature A               & Feature B               & $\sigma=1$    & 10    & 25    & 50    & 100 \\
+ \hline  
+ \tcode{zones}           & \tcode{fourier_image}   & \tcode{False} & 93.47 & 94.82 & 95.24 & 95.33 \\
+\end{tabular}
+\caption{Effet de la variation du nombre d'estimateurs de la RandomForest.}
+\label{table:machine-learning-rf-n-estimators}
+\end{table}
