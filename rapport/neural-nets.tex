@@ -92,8 +92,6 @@ Comme la fonction NAND permet de coder n'importe quelle fonction logique,
 on en déduit qu'en utilisant la sortie de perceptrons comme entrées d'autres 
 perceptrons, on peut construire n'importe quelle fonction logique.
 
-Exercice : Coder la fonction OU logique pour $n$ entrées.
-
 Cette idée d'empiler des couches de perceptrons pour coder une fonction logique 
 conduit naturellement à l'idée que l'on pourrait se faire d'un réseau de neurones.
 
@@ -500,11 +498,11 @@ Cette définition est posée de manière un peu arbitraire et permet simplement
 de simplifier l'écriture des calculs que nous ferrons plus tard. 
 Une autre définition possible aurait été de prendre l'erreur comme étant égale 
 à $\frac{\partial C}{\partial a_{j}^{l}}$. Cela ne change pas grand chose car on 
-a la relation suivante.
+a la relation suivante (règle de la chaîne).
 
 \[
-\frac{\partial C}{\partial z_{j}^{l}} = \frac{\partial C}{\partial a_{j}^{l}} \frac{\partial a_{j}^{l}}{\partial z_{j}^{l}}
-= \frac{\partial C}{\partial a_{j}^{l}} \frac{\partial \sigma(z_{j}^{l})}{\partial z_{j}^{l}} = \frac{\partial C}{\partial a_{j}^{l}} \sigma'(z_{j}^{l})
+\frac{\partial C}{\partial z_{j}^{l}} = \sum_{i} \frac{\partial C}{\partial a_{i}^{l}} \frac{\partial a_{i}^{l}}{\partial z_{j}^{l}}
+= \sum_{i} \frac{\partial C}{\partial a_{i}^{l}} \frac{\partial \sigma(z_{i}^{l})}{\partial z_{j}^{l}} = \frac{\partial C}{\partial a_{j}^{l}} \sigma'(z_{j}^{l})
 \]
 
 
@@ -549,9 +547,12 @@ par rapport aux coefficients du réseau et permettent ainsi d'appliquer la méth
 de la descente de gradient.
 
 \begin{proof}[Preuve de l'équation \ref{eq:bp1}]
-Il suffit de reprendre ce que l'on a fait précédemment. 
+Il suffit de reprendre ce que l'on a fait précédemment (règle de la chaîne). 
 \[
-\delta_{j}^{L} = \frac{\partial C}{\partial z_{j}^{L}} = \frac{\partial C}{\partial a_{j}^{L}} \sigma'(z_{j}^{L})
+\delta_{j}^{L} = \frac{\partial C}{\partial z_{j}^{L}} =
+ \sum_{i} \frac{\partial C}{\partial a_{i}^{L}} \frac{\partial a_{i}^{L}}{z_{j}^{L}} =
+ \sum_{i} \frac{\partial C}{\partial a_{i}^{L}} \frac{\partial \sigma(z_{i}^{L})}{z_{j}^{L}} =
+ \frac{\partial C}{\partial a_{j}^{L}} \sigma'(z_{j}^{L})
 \]
 Soit sous forme vectorielle,
 \[
@@ -596,9 +597,11 @@ quantités voulues.
 
 \begin{proof}[Preuve de l'équation \ref{eq:bp3}]
 \[
-\frac{\partial C}{\partial b_{j}^{l}} = \frac{\partial C}{\partial z_{j}^{l}} \frac{\partial z_{j}^{l}}{\partial b_{j}^{l}}
+\frac{\partial C}{\partial b_{j}^{l}} =
+ \sum_{i} \frac{\partial C}{\partial z_{i}^{l}} \frac{\partial z_{i}^{l}}{\partial b_{j}^{l}} =
+ \frac{\partial C}{\partial z_{j}^{l}} \frac{\partial z_{j}^{l}}{\partial b_{j}^{l}}
 \]
-Or on sait que $z_{j}^{l} = \sum_{k} w_{jk}^{l} a_{k}^{l-1} + b_{j}^{l}$ donc la dérivée deuxième vaut $1$.
+Or on sait que $z_{j}^{l} = \sum_{k} w_{jk}^{l} a_{k}^{l-1} + b_{j}^{l}$ donc la deuxième dérivée vaut $1$.
 Au final,
 \[
 \frac{\partial C}{\partial b_{j}^{l}} = \frac{\partial C}{\partial z_{j}^{l}} = \delta_{j}^{l}
