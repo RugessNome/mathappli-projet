@@ -1,0 +1,28 @@
+
+\chapter{Conclusion}
+
+Nous avons vu dans ce projet différentes techniques que l'on peut utiliser 
+pour la reconnaissance de caractères:
+\begin{itemize}
+  \item les réseaux de neurones \nfw{fully-connected};
+  \item les algorithmes classiques de \nfw{machine learning} : \nfw{random forest}, \nfw{k-nearest neighbors}, \nfw{gradient boosting}, et autres;
+  \item les réseaux convolutifs.
+\end{itemize}
+
+Nous avons abordé le problème à la fois en effectuant du \nfw{feature engineering} sur 
+les données mais également en donnant les images brutes en entrées des réseaux. 
+
+Si les réseaux convolutifs donnent clairement les meilleurs performances 
+(et peuvent être entraîner rapidement), on obtient tout de même des taux 
+de reconnaissance satisfaisant avec les techniques utilisant des features
+relativement simples.
+
+L'un des problèmes rencontrés est celui de la difficulté de généralisation 
+après l'apprentissage.
+En l'absence d'augmentation du jeu d'entraînement, le taux de reconnaissance 
+sur des chiffres écrits par l'utilisateur est décevant.
+Ceci montre qu'en plus d'utiliser de bons algorithmes, il faut surtout avoir 
+un jeu de données le plus complets possibles pour espérer pouvoir faire 
+une classification satisfaisante par la suite.
+
+
