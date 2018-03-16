@@ -167,7 +167,7 @@ avec
 
 \section{Transformée de Fourier du contour}
 
-On s'intéresse ici au contour des chiffres. 
+On s'intéresse ici au contour des chiffres comme il est proposé dans \cite{EllipticFourierFeatures}. 
 On peut voir le contour comme une fonction périofique 
 de $\mathbb{R}$ dans $\mathbb{R}^2$. 
 On peut donc lui appliquer une transformée de Fourier pour 
@@ -508,6 +508,10 @@ par la bibliothèque \tcode{scikit-learn}:
   \item \tcode{GradientBoostingClassifier}, méthode du \emph{gradient boosting};
   \item \tcode{RandomForestClassifier}, une forêt aléatoire.
 \end{itemize}
+
+La plupart de ces classifieurs sont décrits de manière simple dans la documentation de la bibliothèque.
+Pour des explications plus avancées et orientées mathématiques, on pourra par exemple s'orienter 
+vers \textit{The Elements of Statistical Learning} \cite{hastie01statisticallearning}.
 
 Chacun de ces classifieurs doit être paramétré (bien qu'il y ait des valeurs par défaut pour les 
 paramètres) ce qui rend le travail un peu plus compliqué.
