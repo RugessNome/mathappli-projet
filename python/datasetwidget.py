@@ -77,7 +77,7 @@ class DatasetWidget(QWidget):
         self.grid_layout = QGridLayout()
         self.setLayout(self.grid_layout)
         self.cells = []
-        self.set_cells(4, 4)
+        self.set_cells(6, 3)
         return ret
 
     def reset(self, dataset, predictions = None):
@@ -90,6 +90,7 @@ class DatasetWidget(QWidget):
     def set_dataset(self, d):
         if self.dataset == d:
             return
+        self.reset(d)
 
     def row_count(self):
         return self.grid_layout.rowCount()
@@ -156,14 +157,18 @@ class DatasetWidget(QWidget):
     
 
 if __name__ == '__main__':
-    from PyQt5.QtWidgets import QSpinBox
+    from PyQt5.QtWidgets import QSpinBox, QComboBox
     app = QApplication(sys.argv)
     widget = QWidget()
     datasetwidget = DatasetWidget('test')
+    combobox = QComboBox()
+    combobox.addItem('test')
+    combobox.addItem('train')
     spinbox = QSpinBox()
     spinbox.setRange(0, datasetwidget.page_count())
     layout = QVBoxLayout()
     layout.addWidget(datasetwidget)
+    layout.addWidget(combobox)
     layout.addWidget(spinbox)
     widget.setLayout(layout)
     widget.show()
@@ -171,5 +176,9 @@ if __name__ == '__main__':
     def change_page():
         datasetwidget.set_current_page(spinbox.value())
     spinbox.valueChanged.connect(change_page)
+
+    def change_dataset():
+        datasetwidget.set_dataset(combobox.currentText())
+    combobox.currentIndexChanged.connect(change_dataset)
 
     sys.exit(app.exec_())
