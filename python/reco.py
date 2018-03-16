@@ -5,7 +5,7 @@ import features
 
 import numpy as np
 
-def test_feature_set(feats):
+def test_feature_set(feats, scale = True):
     Xtrain = features.get_features(feats, 'training')
     Xtest = features.get_features(feats, 'testing')
     images, ytrain = mnist.load(mnist.MNIST_TRAINING_DATA, mnist.MNIST_FORMAT_PAIR_OF_LIST)
@@ -15,11 +15,12 @@ def test_feature_set(feats):
     from sklearn.ensemble import RandomForestClassifier
     from sklearn import neighbors #k-nearest neighboors
     from sklearn import linear_model
-
-    from sklearn.preprocessing import StandardScaler
-    sc_x = StandardScaler()
-    Xtrain = sc_x.fit_transform(Xtrain)
-    Xtest = sc_x.transform(Xtest)
+    
+    if scale:
+        from sklearn.preprocessing import StandardScaler
+        sc_x = StandardScaler()
+        Xtrain = sc_x.fit_transform(Xtrain)
+        Xtest = sc_x.transform(Xtest)
 
     def prediction_rate(preds):
         count=0
