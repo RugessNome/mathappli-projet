@@ -38,7 +38,7 @@ est en mesure d'obtenir une valeur moyenne pour la précision ainsi qu'une varia
 
 \section{Construction du réseau et description des différentes couches}
 
-Nous avons utiliser la bibliothèque \Python \tcode{keras} pour construire 
+Nous avons utilisé la bibliothèque \Python \tcode{keras} pour construire 
 le réseau convolutif. 
 Le code correspondant à la création du modèle est très simple avec cette 
 bibliothèque.
@@ -82,7 +82,7 @@ d'opération est notamment utilisé en traitement d'image pour appliquer une fon
 particulière à une image. Par exemple, le filtre moyenne remplace chaque pixel par la 
 moyenne des pixels adjacents et du pixel central. Ce filtre peut etre utilisé par
 exemple pour réduire le bruit. De la même manière il existe des filtres de détection de 
-contours ou encore des filtres mettent en avant les changements brutaux de luminosité.
+contours ou encore des filtres mettant en avant les changements brutaux de luminosité.
 
 \begin{figure}[h]
   \centering
@@ -91,7 +91,7 @@ contours ou encore des filtres mettent en avant les changements brutaux de lumin
   \label{fig:filtre_moyenne}
 \end{figure}
 
-Mathématiquement, appliquer un filtre à une matrice de pixels  consiste à effectuer le 
+Mathématiquement, appliquer un filtre à une matrice de pixels consiste à effectuer le 
 produit scalaire d'une portion de l'image par une matrice de petite taille (ici 
 $3 \times 3$). Le principe de cette opération est que les portions de l'image sur 
 lesquelles sont appliquées ces produits scalaires se chevauchent. Ainsi l'information 
@@ -201,7 +201,7 @@ classifier.add(Dropout(0.1))
 \end{codeblock}
 
 Cette ligne de code supplémentaire permet de mettre aléatoirement à zéro une partie des 
-inputs de notre réseau pendant l'entraînement pour limiter le sur-apprentissage. Ici 0,1%
+inputs de notre réseau pendant l'entraînement pour limiter le sur-apprentissage. Ici 10\%
 des entrées sont mises à zéro.
 
 \begin{codeblock}
@@ -256,19 +256,19 @@ l'ensemble des données d'entrainement. Pour continuer d'enrichir le modèle, ce
 est répété plusieurs fois. La précision du modèle augmente donc avec le nombre d'epochs 
 jusqu'à un certain point de stagnation. 
 \item Optimizer : il s'agit de l'algorithme mettant à jour les poids par rétro propagation.
-Le optimizer les plus populaires sont le classique stochastic gradient descent, adam et
-rmsprop. Certains algorithmes sont plus adaptés à certain types de réseau. 
+Les optimizer les plus populaires sont le classique stochastic gradient descent, adam et
+rmsprop. Certains algorithmes sont plus adaptés à certains types de réseau. 
 \item Le nombre de couche, leur agencement, ainsi que les paramètres internes 
-à chaque couche tels que la le nombre de filtres et leut taille pour la convolution
-et la taille des opérateur de pooling. 
+à chaque couche tels que le nombre de filtres et leur taille pour la convolution
+et la taille des opérateurs de pooling. 
 \end{itemize}
 
 Cette dernière partie est la plus complexe à optimiser car contrairement aux premiers 
 paramètres cités, les formes de réseau possibles sont infinis. En effet, s'il est possible 
 de déterminer les paramètres optimaux avec une méthode du type GridSearchCV, il n'est en 
-revanche pas possible d'établir une méthode pour déterminer le nombre de couches idéales, 
+revanche pas possible d'établir une méthode pour déterminer le nombre de couches idéal, 
 leur ordonnancement et les paramètres associés. C'est ici avant tout l'expérience qui va 
-déterminer la configuration à adopter même s'il est possible detester un certain nombre de
+déterminer la configuration à adopter même s'il est possible de tester un certain nombre de
 configuration en cross validation. Les data scientist mettent souvent en avant l'importance
 de l'intuition dans l'établissement d'un réseau de neurones, notamment pour cette raison.
 
@@ -288,10 +288,10 @@ plus hétérogènes et limitent donc certains biais liés à la méthode de cré
 données. Dans le cadre d'enregistrement de nombre manuscrits comme réalisé avec le jeu de 
 données MNIST, malgré un effort pour avoir des données les plus variées possible, en faisant
 appel à de nombreuses personnes pour la rédaction des caractères, certains biais subsistent.
-Par exemple la méthode même de numérisation des données, la qualité globales des images,
-le contraste, l'épaisseur du trait, le centrage des caractère sont autant de facteurs qui 
+Par exemple la méthode même de numérisation des données, la qualité globale des images,
+le contraste, l'épaisseur du trait, le centrage des caractères sont autant de facteurs qui 
 influencent l'apprentissage d'un modèle prédictif. Détériorer intelligemment le jeu de
-donnée initiale peut donc apporter une amélioration significative au modèle en limitant 
+données initial peut donc apporter une amélioration significative au modèle en limitant 
 ces biais mais aussi en enrichissant le modèle. 
 
 Sous \Python \tcode{keras}, la méthode couramment utilisée pour réaliser cette opération
@@ -314,12 +314,12 @@ chiens.
   \label{fig:augmented-image}
 \end{figure}
 
-Dans le cadre de la prédiction de caractère manuscrits, seuls les zooms et 
-déformation verticales et horizontales sont intéressant ainsi que les rotations dans une 
+Dans le cadre de la prédiction de caractères manuscrits, seuls les zooms et 
+déformations verticales et horizontales sont intéressant ainsi que les rotations dans une 
 certaine mesure (pour imiter l'écriture légèrement penchée de certaines personnes par 
-exemple). Les renversement d'image sont ici à proscrire. Ces modifications 
+exemple). Les renversements d'image sont ici à proscrire. Ces modifications 
 permettent à la fois de faire varier l'épaisseur du trait, le centrage de l'image et 
-apporte de la diversité en déformant certains caractères. Il peut aussi s'avérer judicieux
+apportent de la diversité en déformant certains caractères. Il peut aussi s'avérer judicieux
 de faire varier les niveaux de gris. Ceci afin de corriger un éventuel biais lié à la 
 méthode d'enregistrement mais aussi pour enrichir une fois de plus le jeu de données en 
 faisant varier ce que l'on pourrait comparer à l'intensité du trait. Dans le cas de 

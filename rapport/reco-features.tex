@@ -5,8 +5,8 @@
 
 
 
-Si l'utilisation des données brutes comme entrée des réseaux de neurones 
-permet déjà d'obtenir des résultats encourageant, il est possible de faire 
+Si l'utilisation des données brutes comme entrées des réseaux de neurones 
+permet déjà d'obtenir des résultats encourageants, il est possible de faire 
 mieux en effectuant un pré-traitement des données. 
 Il s'agit d'extraire des données brutes (i.e.\/ les pixels de l'image) des 
 caractéristiques (ou \nfw{features} en anglais) qui permettent de décrire 
@@ -14,7 +14,7 @@ l'image dans un format plus adapté pour une machine.
 
 Ces features peuvent être regroupés en deux catégories : 
 \begin{enumerate}
-  \item les features statistiques, qui vont s'intéresser à des densité de pixels, 
+  \item les features statistiques, qui vont s'intéresser à des densités de pixels, 
   des extremums et autres transformées mathématiques;
   \item les features structurelles, qui s’intéressent aux traits (strokes), aux courbes,
   aux nombres de bifurcations, etc…, ces dernières sont plus intuitives pour l’humain.
@@ -35,7 +35,7 @@ C'est à dire que chaque pixel est représenté par un entier entre 0
 et 255 (du blanc au noir). 
 Certains algorithmes ne prennent pas en compte le niveau de coloration 
 du pixel et s'intéresse juste au fait que le pixel soit noir ou blanc. 
-Il est donc utile, dans ce cas de binariser l'image (i.e.\/ de passer 
+Il est donc utile dans ce cas de binariser l'image (i.e.\/ de passer 
 à la convention 0 pour un pixel ne contenant pas d'encre et 1 pour 
 un pixel en contenant). 
 On choisit donc arbitrairement un seuil à partir duquel on considère que 
@@ -169,7 +169,7 @@ avec
 \section{Transformée de Fourier du contour}
 
 On s'intéresse ici au contour des chiffres comme il est proposé dans \cite{EllipticFourierFeatures}. 
-On peut voir le contour comme une fonction périofique 
+On peut voir le contour comme une fonction périodique 
 de $\mathbb{R}$ dans $\mathbb{R}^2$. 
 On peut donc lui appliquer une transformée de Fourier pour 
 en récupérer un spectre de fréquence. 
@@ -189,7 +189,7 @@ Nous avons implémenté une fonction permettant de calculer le
 contour d'une image.
 Voici en quelques mots son principe de fonctionnement. 
 On commence par partir du pixel situé en haut à droite de l'image 
-et on parcours les pixels de gauche à droite et de haut an bas 
+et on parcourt les pixels de gauche à droite et de haut an bas 
 jusqu'à trouver un pixel colorié. 
 On prend comme point de départ le dernier pixel non colorié sur lequel 
 on est passé.
@@ -352,12 +352,12 @@ légèrement d'un essai à l'autre.
 \label{table:machine-learning-1}
 \end{table}
 
-Comme on peut le voir, on peut déjà arriver à des résultats satisfaisant en choisissant
-bien une features et un classifieur.
+Comme on peut le voir, on peut déjà arriver à des résultats satisfaisants en choisissant
+bien une feature et un classifieur.
 
 On peut alors avoir envie de tester plusieurs stratégies pour améliorer les résultats:
 \begin{enumerate}
-  \item garder le feature qui semble la plus prometteuse, et améliorer le paramétrage des classifieurs;
+  \item garder la feature qui semble la plus prometteuse, et améliorer le paramétrage des classifieurs;
   \item ne pas toucher au paramétrage des classifieurs, mais considérer plusieurs features;
   \item faire une combinaison des deux points précédents.
 \end{enumerate}
