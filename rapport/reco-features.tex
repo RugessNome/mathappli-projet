@@ -129,7 +129,7 @@ Cette méthode n’est à priori pas sensible à l’épaisseur du trait.
 On compte pour chaque ligne (resp. chaque colonne) le nombre de pixels allumés sur 
 la ligne (resp. colonne). 
 En faisant ça sur l’ensemble de l’image, on obtient deux histogrammes. 
-Cette technique peut aussi être utilisé pour segmenter des lignes et caractères isolés. 
+Cette technique peut aussi être utilisée pour segmenter des lignes et caractères isolés. 
 Cette technique peut être sensible à l’épaisseur du trait. 
 Pour palier ce problème, on peut renormaliser chaque histogramme en divisant 
 chaque valeur par le total.
@@ -189,7 +189,7 @@ Nous avons implémenté une fonction permettant de calculer le
 contour d'une image.
 Voici en quelques mots son principe de fonctionnement. 
 On commence par partir du pixel situé en haut à droite de l'image 
-et on parcourt les pixels de gauche à droite et de haut an bas 
+et on parcourt les pixels de gauche à droite et de haut en bas 
 jusqu'à trouver un pixel colorié. 
 On prend comme point de départ le dernier pixel non colorié sur lequel 
 on est passé.
@@ -200,9 +200,9 @@ droite les pixels coloriés.
 Pour avancer, elle regarde, à partir de sa direction actuelle, quelle 
 est la case la plus à droite qu'elle peut atteindre sans faire demi-tour.
 Si la première case à droite qu'elle peut atteindre correspond à un demi-tour, 
-elle regarde la première case à sa gauche qu'elle peut atteindre.
+elle regarde la première case à sa gauche qu'elle peut atteindre
 [Note: il y a quelques autres subtilités non décrites ici pour simplifier, 
-le code est disponible dans le fichier \tcode{features.py}]
+le code est disponible dans le fichier \tcode{features.py}].
 L'algorithme se termine quand la coccinelle revient à son point de départ.
 
 \begin{figure}[h!]
@@ -331,9 +331,9 @@ Nous commençons d'abord par tester les différents classifieurs avec les
 paramètres par défaut pour voir lesquels sont les plus prometteurs.
 Cela correspond par exemple à 10 estimateurs pour les forêts aléatoires
 et à 5 voisins pour les $k$ plus proches voisins.
-Le tableau suivant montre les résultats obtenus (pourcentage d'images bien classés dans le 
+Le tableau suivant montre les résultats obtenus (pourcentage d'images bien classées dans le 
 jeu de test) en fonction des features utilisés et d'une éventuelle renormalisation ($\sigma = 1$).
-Certains algorithmes étant en partie aléatoire, les résultats peuvent varier 
+Certains algorithmes étant en partie aléatoires, les résultats peuvent varier 
 légèrement d'un essai à l'autre.
 
 \begin{table}[h]

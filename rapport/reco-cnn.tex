@@ -16,7 +16,7 @@ sont "agglomérés" pour obtenir une prédiction.
 
 On décompose le problème en plusieurs étapes:
 \begin{enumerate}
-  \item création du modèle de réseau convolutifs, on définit le nombre de 
+  \item création du modèle de réseau convolutif, on définit le nombre de 
   couches et les caractéristiques de chaque couche;
   \item entraînement, on utilise les données d'entraînement pour modifier les 
   poids du réseau;
@@ -121,7 +121,7 @@ entrant en signal de sortie. On peut citer notamment les
 fonctions tangante hyperbolique, sigmoïde, exponentielle. La fonction d'activation 
 \tcode{relu} est la plus populaire dans le cadre des réseaux de neurones à convolution.
 Les deux premiers arguments sont les plus intéressants. 
-On indique que l'on souhaite applique $32$ filtres à des \tcode{patch} de taille 
+On indique que l'on souhaite appliquer $32$ filtres à des \tcode{patch} de taille 
 $3 \times 3$. 
 
 \begin{figure}[h]
@@ -208,9 +208,9 @@ des entrées sont mises à zéro.
 classifier.add(Dense(units = 128, activation='relu'))
 \end{codeblock}
 
-On ajoute enfin une couche de neurone \nfw{fully-connected}. 
-Cela correspond à une couche classique d'un réseau de neurone telle que présentée 
-dans la première partie. 
+On ajoute enfin une couche de neurones \nfw{fully-connected}. 
+Cela correspond à une couche classique d'un réseau de neurones telle que présentée 
+dans la section \ref{reseau}. 
 On précise la dimension de l'espace de sortie, $128$; et la fonction 
 d'activation, \tcode{relu}. 
 
@@ -227,7 +227,7 @@ classifier.add(Dense(units = 10, activation='softmax'))
 
 La dernière couche du réseau, ayant 10 sorties correspondant à nos 10 classes. 
 La fonction d'activation utilisée ici est \tcode{softmax}. 
-Cette fonction permet de transformer un vecteur de nombre positifs en 
+Cette fonction permet de transformer un vecteur de nombres positifs en 
 un vecteur définissant une probabilité (les composantes peuvent être 
 vues comme la probabilité d'appartenance à la classe associée).
     
@@ -237,7 +237,7 @@ classifier.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['
 \end{codeblock}
 
 On compile notre modèle, on peut désormais entraîner notre réseau. 
-Il reste cependant un certain nombre de paramètre à régler pour optimiser notre modèle.
+Il reste cependant un certain nombre de paramètres à régler pour optimiser notre modèle.
 
 \section{Optimisation du modèle}
 
@@ -247,24 +247,24 @@ Les principaux paramètres du modèle sont :
 
 \begin{itemize}
 \item Batch size : les images ne sont pas propagées dans le réseau une par une mais par 
-paquet ou batch. Ce paramètre détermine donc la taille de ces paquets. Les poids du réseau
+paquets ou batch. Ce paramètre détermine donc la taille de ces paquets. Les poids du réseau
 sont mis à jour après le passage de chacun de ces paquets. Typiquement plus le batch size
 est petit meilleur sera l'apprentissage. En revanche le temps de calcul est alors d'autant
 plus long. Un bon compromis consiste souvent à prendre ce paramètre égal à 32.
-\item Nombre d'epochs : un epoch correspond à un passage au travers du réseau de 
+\item Nombre d'epochs : comme précisé plus haut, un epoch correspond à un passage au travers du réseau de 
 l'ensemble des données d'entrainement. Pour continuer d'enrichir le modèle, ce processus 
 est répété plusieurs fois. La précision du modèle augmente donc avec le nombre d'epochs 
 jusqu'à un certain point de stagnation. 
-\item Optimizer : il s'agit de l'algorithme mettant à jour les poids par rétro propagation.
+\item Optimizer : il s'agit de l'algorithme mettant à jour les poids par rétro-propagation.
 Les optimizer les plus populaires sont le classique stochastic gradient descent, adam et
 rmsprop. Certains algorithmes sont plus adaptés à certains types de réseau. 
-\item Le nombre de couche, leur agencement, ainsi que les paramètres internes 
+\item Le nombre de couches, leur agencement, ainsi que les paramètres internes 
 à chaque couche tels que le nombre de filtres et leur taille pour la convolution
 et la taille des opérateurs de pooling. 
 \end{itemize}
 
 Cette dernière partie est la plus complexe à optimiser car contrairement aux premiers 
-paramètres cités, les formes de réseau possibles sont infinis. En effet, s'il est possible 
+paramètres cités, les formes de réseaux possibles sont infinies. En effet, s'il est possible 
 de déterminer les paramètres optimaux avec une méthode du type GridSearchCV, il n'est en 
 revanche pas possible d'établir une méthode pour déterminer le nombre de couches idéal, 
 leur ordonnancement et les paramètres associés. C'est ici avant tout l'expérience qui va 
@@ -282,10 +282,10 @@ l'expérimentation.
 
 Cependant, il y a un autre point important sur lequel jouer pour limiter le phénomène de
 sur-apprentissage. Il s'agit de détériorer volontairement le jeu de données d'entrainement
-par une série de transformation aléatoires telles que des translations, des zooms ou
+par une série de transformations aléatoires telles que des translations, des zooms ou
 encore des rotations. Ces légères modifications permettent de rendre le jeu de données 
-plus hétérogènes et limitent donc certains biais liés à la méthode de création du jeu de
-données. Dans le cadre d'enregistrement de nombre manuscrits comme réalisé avec le jeu de 
+plus hétérogène et limitent donc certains biais liés à la méthode de création du jeu de
+données. Dans le cadre d'enregistrement de nombres manuscrits comme réalisé avec le jeu de 
 données MNIST, malgré un effort pour avoir des données les plus variées possible, en faisant
 appel à de nombreuses personnes pour la rédaction des caractères, certains biais subsistent.
 Par exemple la méthode même de numérisation des données, la qualité globale des images,
@@ -315,7 +315,7 @@ chiens.
 \end{figure}
 
 Dans le cadre de la prédiction de caractères manuscrits, seuls les zooms et 
-déformations verticales et horizontales sont intéressant ainsi que les rotations dans une 
+déformations verticales et horizontales sont intéressants ainsi que les rotations dans une 
 certaine mesure (pour imiter l'écriture légèrement penchée de certaines personnes par 
 exemple). Les renversements d'image sont ici à proscrire. Ces modifications 
 permettent à la fois de faire varier l'épaisseur du trait, le centrage de l'image et 

@@ -1,5 +1,5 @@
 
-\chapter{Les réseaux de neurones}
+\chapter{\label{reseau}Les réseaux de neurones}
 
 Dans cette partie, nous présentons de manière simplifiée les réseaux de neurones 
 et comment les utiliser pour résoudre notre problème de classification.
@@ -167,7 +167,8 @@ qui serait capable de reconnaître des chiffres.
 L'un des problèmes de cette approche est qu'il faudrait déjà connaître les coefficients 
 (ou paramètres) de l'ensemble des perceptrons du réseau.
 On pourrait alors avoir envie d'écrire un algorithme permettant de construire un tel 
-réseau. On peut imaginer plusieurs principes pour cet algorithme :`
+réseau. On peut imaginer plusieurs principes pour cet algorithme :
+
 \begin{enumerate}
   \item tester tous les coefficients possibles pour les perceptrons;
   \item partir d'une configuration aléatoire et modifier petit à petit les coefficients 
@@ -402,7 +403,7 @@ On parle aussi de \textsc{MSE} pour \nfw{mean square error}.
 Par la suite, et pour alléger les notations, on écrira souvent $a^{L}$ et $y$ 
 au lieu de $a^{L}(x)$ et $y_x$.
 
-Cette fonction à le bon goût d'être convexe. Ainsi, on peut la minimiser en annulant 
+Cette fonction a le bon goût d'être convexe. Ainsi, on peut la minimiser en annulant 
 sa dérivée. 
 Cependant cette fonction dépend de tous les $w^{l}$ et $b^{l}$ ainsi que de la fonction 
 $\sigma$, le calcul de la dérivée et de son point d'annulation n'est donc pas facile.
@@ -650,7 +651,7 @@ tableaux de 28 par 28 contenant des entiers de 0 à 255.
 On commence par redimensionner le tableau en un vecteur 
 de taille 784 que l'on divise ensuite par 255 pour obtenir 
 des composantes entre 0 et 1. 
-Cela n'est pas nécessaire dans l'absolue mais donne de 
+Cela n'est pas nécessaire dans l'absolu mais donne de 
 meilleurs résultats en pratique.
 En effet, la sigmoïde faisant intervenir une exponentielle, 
 on aura du mal à calculer numériquement $e^{-255}$.

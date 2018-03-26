@@ -1,0 +1,19 @@
+\begin{thebibliography}{1}
+
+\bibitem{hastie01statisticallearning}
+T.~Hastie, R.~Tibshirani, and J.~Friedman.
+\newblock {\em The Elements of Statistical Learning}.
+\newblock Springer Series in Statistics. Springer New York Inc., New York, NY,
+  USA, 2001.
+
+\bibitem{EllipticFourierFeatures}
+F.~P. Kuhl and C.~R. Giardina.
+\newblock Elliptic fourier features of a closed contour.
+\newblock {\em Computer graphics and image processing}, 1981.
+
+\bibitem{neuralnetworksanddeeplearning}
+M.~A. Nielsen.
+\newblock {\em Neural Networks and Deep Learning}.
+\newblock Determination Press, 2015.
+
+\end{thebibliography}
