@@ -53,16 +53,25 @@ class FeatureBasedClassifier(object):
     def feature_names(self):
         return self.classifier.feature_names
 
+    # Fits the classifier using a set of images.
+    # Features are calculated for each image.
     def fit(self, X, Y):
         feats = np.array([features.get_features(self.feature_names(), x) for x in X])
         self.classifier.fit(feats, Y)
 
+    # Fits the classifier using the features.
     def fit_features(self, feats, Y):
         self.classifier.fit(feats, Y)
 
+    # Makes a prediction on a set of images.
+    # Features are calculated for each image.
     def predict(self, X):
         feats = np.array([features.get_features(self.feature_names(), x) for x in X])
         return self.classifier.predict(feats)
+
+    # Makes a prediction directly from the features
+    def predict_features(self, X):
+        return self.classifier.predict(X)
 
     def predict_proba(self, X):
         feats = np.array([features.get_features(self.feature_names(), x) for x in X])
@@ -132,6 +141,36 @@ def example1():
         print('Expected = ', labels[i])
 
 def example2():
+    from sklearn.ensemble import RandomForestClassifier
+    cla = FeatureBasedClassifier(RandomForestClassifier(), ['loops'])
+    try:
+        cla.load('rf_example2')
+    except:
+        images, labels = mnist.load('train', mnist.MNIST_FORMAT_PAIR_OF_LIST)
+        feats = features.get_features(cla.feature_names(), 'training')
+        cla.fit_features(feats, labels)
+        cla.save('rf_example2')
+    images, labels = mnist.load('test', mnist.MNIST_FORMAT_PAIR_OF_LIST)
+    for i in range(10):
+        print('Prediction = ', cla.predict([images[i]]))
+        print('Expected = ', labels[i])
+
+def example3():
+    from sklearn.ensemble import RandomForestClassifier
+    cla = FeatureBasedClassifier(RandomForestClassifier(), ['loops', 'moments'])
+    try:
+        cla.load('rf_example3')
+    except:
+        images, labels = mnist.load('train', mnist.MNIST_FORMAT_PAIR_OF_LIST)
+        feats = features.get_features(cla.feature_names(), 'training')
+        cla.fit_features(feats, labels)
+        cla.save('rf_example3')
+    images, labels = mnist.load('test', mnist.MNIST_FORMAT_PAIR_OF_LIST)
+    for i in range(10):
+        print('Prediction = ', cla.predict([images[i]]))
+        print('Expected = ', labels[i])
+
+def example4():
     import network
     net = network.Network([28*28, 30, 10])
     training = mnist.load('training', mnist.MNIST_FORMAT_LIST_OF_PAIR)

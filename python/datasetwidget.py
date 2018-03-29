@@ -55,16 +55,19 @@ class ImageView(QWidget):
     def label_text(self):
         if self.prediction is None:
             return str(self.label)
-        return str(self.label) + '(' + str(self.prediction) + ')'
+        return str(self.label) + ' (' + str(self.prediction) + ')'
 
     def check_prediction(self):
         if self.prediction is None:
             return
         if self.prediction == self.label:
-            return
-        pal = self.labelwidget.palette()
-        pal.setColor(QPalette.Normal, QPalette.WindowText, Qt.red)
-        self.labelwidget.setPalette(pal)
+            pal = self.labelwidget.palette()
+            pal.setColor(QPalette.Normal, QPalette.WindowText, Qt.black)
+            self.labelwidget.setPalette(pal)
+        else:
+            pal = self.labelwidget.palette()
+            pal.setColor(QPalette.Normal, QPalette.WindowText, Qt.red)
+            self.labelwidget.setPalette(pal)
 
 
 class DatasetWidget(QWidget):
@@ -155,6 +158,25 @@ class DatasetWidget(QWidget):
         for i in range(first, first+per_page):
             self.cells[i-first].reset(self.get_image(i), self.get_label(i), self.get_prediction(i))
     
+
+def build_dataset_widget_with_controls(dataset, predictions=None):
+    from PyQt5.QtWidgets import QSpinBox, QComboBox
+    widget = QWidget()
+    datasetwidget = DatasetWidget(dataset, predictions)
+    spinbox = QSpinBox()
+    spinbox.setRange(0, datasetwidget.page_count())
+    layout = QVBoxLayout()
+    layout.addWidget(datasetwidget)
+    layout.addWidget(spinbox)
+    widget.setLayout(layout)
+    widget.show()
+
+    def change_page():
+        datasetwidget.set_current_page(spinbox.value())
+    spinbox.valueChanged.connect(change_page)
+
+    return widget
+
 
 if __name__ == '__main__':
     from PyQt5.QtWidgets import QSpinBox, QComboBox

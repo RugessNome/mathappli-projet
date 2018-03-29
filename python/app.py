@@ -26,6 +26,12 @@ classifiers.append(('neural network', ann_cla))
 rf_cla = reco.FeatureBasedClassifier('rf_example1')
 classifiers.append(('random forest', rf_cla))
 
+rf_cla_2 = reco.FeatureBasedClassifier('rf_example2')
+classifiers.append(('random forest (loops)', rf_cla_2))
+
+rf_cla_3 = reco.FeatureBasedClassifier('rf_example3')
+classifiers.append(('random forest (loops, moments)', rf_cla_3))
+
 current_classifier_combobox = None
 
 def on_button_clicked():
@@ -64,6 +70,40 @@ def on_contour_button_clicked():
 def on_clear_button_clicked():
     draw.clear()
 
+
+g_dataset_widget = None
+def on_visualize_button_clicked():
+    cla_name, cla = classifiers[current_classifier_combobox.currentIndex()]
+    import mnist
+    images, ytest = mnist.load('test', mnist.MNIST_FORMAT_PAIR_OF_LIST)
+    if type(cla) is cnn.CNNClassifier or type(cla) is reco.NeuralNetworkClassifier:
+        images = images/255
+    else:
+        assert type(cla) is reco.FeatureBasedClassifier
+        import features
+        images = features.get_features(cla.feature_names(), 'testing')
+
+    if type(cla) is cnn.CNNClassifier:
+        images = images.reshape((len(images), 28, 28, 1))
+    elif type(cla) is reco.NeuralNetworkClassifier:
+        images = images.reshape((len(images), 28*28))
+    elif type(cla) is reco.FeatureBasedClassifier:
+        pass
+
+    predictions = None
+    if type(cla) is cnn.CNNClassifier or type(cla) is reco.NeuralNetworkClassifier:
+        predictions = cla.predict(images)
+    elif type(cla) is reco.FeatureBasedClassifier:
+        predictions = cla.predict_features(images)
+
+    acc = (ytest == predictions).sum() / len(ytest)
+
+    import datasetwidget
+    global g_dataset_widget
+    g_dataset_widget = datasetwidget.build_dataset_widget_with_controls('test', predictions)
+    g_dataset_widget.setWindowTitle('Accuracy = {}'.format(acc))
+    g_dataset_widget.show()
+
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     widget = QWidget()
@@ -86,6 +126,9 @@ if __name__ == '__main__':
     button = QPushButton('Clear')
     layout.addWidget(button)
     button.clicked.connect(on_clear_button_clicked)
+    button = QPushButton('Visualize')
+    layout.addWidget(button)
+    button.clicked.connect(on_visualize_button_clicked)
     widget.setLayout(layout)
     widget.show()
     sys.exit(app.exec_())
